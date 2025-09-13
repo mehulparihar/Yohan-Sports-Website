@@ -8,6 +8,12 @@ const SlotSchema = new mongoose.Schema({
   enrolledCount: { type: Number, default: 0 }
 }, { _id: false });
 
+const ImageSubSchema = new mongoose.Schema({
+  url: { type: String, required: true },
+  publicId: { type: String, required: true },
+  caption: { type: String, default: '' },
+}, { _id: false });
+
 const ProgramSchema = new mongoose.Schema({
   title: { type: String, required: true },
   slug: { type: String, index: true, unique: true, required: true },
@@ -23,7 +29,7 @@ const ProgramSchema = new mongoose.Schema({
   schedule: [SlotSchema],
   tags: [String],
   thumbnail: String,
-  images: [String],
+  images: [ImageSubSchema],
   isActive: { type: Boolean, default: true },
   seats: Number, // overall seats if needed
   metadata: mongoose.Schema.Types.Mixed

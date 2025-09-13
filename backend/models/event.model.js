@@ -1,5 +1,12 @@
 import mongoose from "mongoose";
 
+const ImageSubSchema = new mongoose.Schema({
+  url: { type: String, required: true },
+  publicId: { type: String, required: true },
+  caption: { type: String, default: '' },
+}, { _id: false });
+
+
 const EventSchema = new mongoose.Schema({
   title: { type: String, required: true },
   slug: { type: String, index: true, unique: true },
@@ -7,7 +14,7 @@ const EventSchema = new mongoose.Schema({
   startDate: { type: Date, index: true },
   endDate: Date,
   venueId: { type: mongoose.Schema.Types.ObjectId, ref: 'Venue' },
-  image: String,
+  images: [ImageSubSchema],
   price: { type: Number, default: 0 },
   capacity: Number,
   enrolledCount: { type: Number, default: 0 },

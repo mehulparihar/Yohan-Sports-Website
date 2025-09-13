@@ -46,6 +46,33 @@ export const logout = async (req, res) => {
     }
 };
 
+export const signup = async (req, res) => {
+    try {
+        const { email, password, name } = req.body;
+        const userExist = await User.findOne({ email });
+
+        if (userExist) {
+            return res.status(400).json({ message: "user already exist" });
+        }
+        const user = await User.create({ name, email, password });
+
+        //authenticate
+        const {accessToken, refreshToken} = generateTokens(user._id);
+        await storeRefreshToken(user._id, refreshToken);
+
+        setCookies(res, accessToken, refreshToken);
+
+        res.status(201).json({
+            _id : user._id,
+            name : user.name,
+            email : user.email,
+            role : user.role,
+        });
+    } catch (error) {
+        res.status(500).json({message : error.message});
+    }
+};
+
 export const login = async (req, res) => {
     try {
         const { email, password } = req.body;

@@ -1,5 +1,11 @@
 import mongoose from "mongoose";
 
+const ImageSubSchema = new mongoose.Schema({
+  url: { type: String, required: true },
+  publicId: { type: String, required: true },
+  caption: { type: String, default: '' }
+}, { _id: false });
+
 const VenueSchema = new mongoose.Schema({
   name: { type: String, required: true },
   slug: { type: String, index: true, unique: true },
@@ -12,7 +18,7 @@ const VenueSchema = new mongoose.Schema({
   },
   phone: String,
   email: String,
-  images: [String], // urls
+  images: [ImageSubSchema],
   capacity: Number,
   metadata: mongoose.Schema.Types.Mixed
 }, { timestamps: true });

@@ -3,8 +3,13 @@ import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import { connectDB } from "./lib/db.js";
-import userRoutes from "./routes/user.route.js";
 import authRoutes from "./routes/auth.route.js";
+import programRoutes from "./routes/program.route.js";
+import eventRoutes from "./routes/event.route.js";
+import venueRoutes from "./routes/venue.route.js";
+import coachRoutes from "./routes/coach.route.js";
+import enquiryRoutes from "./routes/enquiry.route.js";
+
 dotenv.config();
 
 const app = express();
@@ -15,8 +20,18 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(cors());
 
-app.use("/api/admin/users", userRoutes);
 app.use("/api/admin/auth", authRoutes);
+app.use("/api/admin/programs", programRoutes);
+app.use("/api/admin/events", eventRoutes);
+app.use("/api/admin/venues", venueRoutes);
+app.use("/api/admin/coaches", coachRoutes);
+app.use("/api/admin/enquiries", enquiryRoutes);
+
+app.use("/api/programs", programRoutes);
+app.use("/api/events", eventRoutes);
+app.use("/api/venues", venueRoutes);
+app.use("/api/coaches", coachRoutes);
+app.use('/api/enquiries', enquiryRoutes);
 
 app.listen(PORT, () => {
     console.log("Server is running " + PORT);
