@@ -58,7 +58,7 @@ export const updateVenue = async (req, res) => {
 export const deleteVenue = async (req, res) => {
     try {
         const venue = await Venue.findByIdAndDelete(req.params.id);
-        if (!venue) return res.status(404).json({ error: 'not found' });
+        if (!venue) return res.status(404).json({ error: 'Venue not found' });
 
         if (venue.thumbnail?.publicId) {
             try { await deleteFromCloudinary(venue.thumbnail.publicId, { resource_type: 'image' }); } catch (e) { console.warn('thumb del', e.message); }
@@ -67,7 +67,7 @@ export const deleteVenue = async (req, res) => {
             try { await deleteFromCloudinary(img.publicId, { resource_type: 'image' }); } catch (e) { console.warn('img del', e.message); }
         }
 
-        res.json({ data: v });
+        res.json({ data: venue});
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

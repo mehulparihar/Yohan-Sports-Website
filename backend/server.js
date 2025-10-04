@@ -24,13 +24,13 @@ app.use("/api/admin/auth", authRoutes);
 app.use("/api/admin/programs", programRoutes);
 app.use("/api/admin/events", eventRoutes);
 app.use("/api/admin/venues", venueRoutes);
-app.use("/api/admin/coaches", coachRoutes);
+app.use("/api/admin/coach", coachRoutes);
 app.use("/api/admin/enquiries", enquiryRoutes);
 
 app.use("/api/programs", programRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/venues", venueRoutes);
-app.use("/api/coaches", coachRoutes);
+app.use("/api/coach", coachRoutes);
 app.use('/api/enquiries', enquiryRoutes);
 
 app.listen(PORT, () => {
