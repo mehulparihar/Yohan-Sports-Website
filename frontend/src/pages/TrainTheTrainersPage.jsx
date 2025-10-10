@@ -1,384 +1,877 @@
-import React from 'react'
-import { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import Footer from '../components/Footer'
-import Navbar from '../components/Navbar'
+'use client';
 
-const MODULES = [
-  {
-    id: "m1",
-    title: "Foundations of Sports Pedagogy",
-    duration: "20 hours",
-    icon: "📚",
-    desc: "Learn age-appropriate coaching methodologies, skill progression models, and inclusive teaching strategies.",
-  },
-  {
-    id: "m2",
-    title: "Sport-Specific Technical Mastery",
-    duration: "30 hours",
-    icon: "🏏",
-    desc: "Deep dive into cricket, football, or basketball techniques with ex-international coaches and video analysis.",
-  },
-  {
-    id: "m3",
-    title: "Athlete Development & Psychology",
-    duration: "15 hours",
-    icon: "🧠",
-    desc: "Understand growth stages, motivation techniques, and mental resilience training for young athletes.",
-  },
-  {
-    id: "m4",
-    title: "Injury Prevention & Conditioning",
-    duration: "12 hours",
-    icon: "💪",
-    desc: "Learn warm-up protocols, strength routines, and recovery strategies tailored for school-age athletes.",
-  },
-  {
-    id: "m5",
-    title: "Curriculum Design & Assessment",
-    duration: "18 hours",
-    icon: "📊",
-    desc: "Build PE programs aligned with CBSE/ICSE standards and implement skill-based evaluation frameworks.",
-  },
-  {
-    id: "m6",
-    title: "Leadership & Classroom Management",
-    duration: "10 hours",
-    icon: "👥",
-    desc: "Master group dynamics, behavior management, and creating a positive, engaging sports environment.",
-  },
-]
+import { useState, useEffect, useRef } from 'react';
+import { motion, useAnimation, useInView, useScroll, useTransform } from 'framer-motion';
+import { Users, Award, Trophy, Calendar, MapPin, Clock, TrendingUp, Shield, Star, CheckCircle, BookOpen, GraduationCap, Target, Heart, ChevronRight } from 'lucide-react';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 
-const BENEFITS = [
-  "✅ Certified by Yohan Sports & NSN (National Sports Network)",
-  "✅ Eligible to coach in 50+ partner schools nationwide",
-  "✅ Access to exclusive coaching resources & playbooks",
-  "✅ Mentorship from senior international-level coaches",
-  "✅ Pathway to lead regional training centers",
-  "✅ Annual upskilling workshops & refresher courses",
-]
+// Mock data for train the trainer
+const programs = [
+  {
+    id: 1,
+    name: "Certified Sports Coach Program",
+    description: "Comprehensive certification program for aspiring sports coaches covering all aspects of modern coaching methodology.",
+    duration: "12 weeks",
+    format: "Hybrid (Online + In-person)",
+    price: 25000,
+    features: ["International Certification", "Practical Training", "Mentorship", "Job Placement Assistance", "Lifetime Access to Resources"],
+    image: "https://placehold.co/800x500/059669/white?text=Coach+Certification",
+    level: "Beginner to Advanced",
+    nextBatch: "June 15, 2024"
+  },
+  {
+    id: 2,
+    name: "Advanced Coaching Methodology",
+    description: "Specialized program for experienced coaches looking to enhance their skills with cutting-edge techniques and analytics.",
+    duration: "8 weeks",
+    format: "In-person intensive",
+    price: 18000,
+    features: ["Advanced Analytics", "Video Analysis Training", "Performance Psychology", "Leadership Development", "Peer Networking"],
+    image: "https://placehold.co/800x500/dc2626/white?text=Advanced+Coaching",
+    level: "Intermediate to Advanced",
+    nextBatch: "July 10, 2024"
+  },
+  {
+    id: 3,
+    name: "Youth Sports Development Specialist",
+    description: "Focused program on coaching young athletes with age-appropriate training methods and child psychology.",
+    duration: "6 weeks",
+    format: "Online + Weekend Workshops",
+    price: 12000,
+    features: ["Child Psychology", "Age-Appropriate Training", "Injury Prevention", "Parent Communication", "Long-term Athlete Development"],
+    image: "https://placehold.co/800x500/7c3aed/white?text=Youth+Specialist",
+    level: "Beginner",
+    nextBatch: "August 5, 2024"
+  },
+  {
+    id: 4,
+    name: "Sports Psychology for Coaches",
+    description: "Specialized training in mental conditioning, motivation techniques, and psychological aspects of athletic performance.",
+    duration: "4 weeks",
+    format: "Online",
+    price: 8000,
+    features: ["Mental Conditioning", "Motivation Strategies", "Stress Management", "Team Dynamics", "Individual Athlete Psychology"],
+    image: "https://placehold.co/800x500/0891b2/white?text=Sports+Psychology",
+    level: "All Levels",
+    nextBatch: "September 1, 2024"
+  }
+];
 
-const TESTIMONIALS = [
+const curriculum = [
   {
-    quote: "This program transformed how I teach PE. I now design sessions that are fun, structured, and inclusive.",
-    author: "Rahul Mehta",
-    role: "PE Teacher, St. Mary’s School",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100",
+    module: "Module 1",
+    title: "Foundations of Sports Coaching",
+    topics: ["Coaching Philosophy", "Ethics in Sports", "Communication Skills", "Basic Training Principles"],
+    duration: "2 weeks"
   },
   {
-    quote: "The certification opened doors to full-time coaching roles. The practical sessions were game-changing.",
-    author: "Anjali Rao",
-    role: "Cricket Coach, Mumbai Academy",
-    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=100",
+    module: "Module 2",
+    title: "Technical & Tactical Training",
+    topics: ["Sport-Specific Techniques", "Game Strategy", "Video Analysis", "Performance Assessment"],
+    duration: "3 weeks"
   },
-]
+  {
+    module: "Module 3",
+    title: "Physical Conditioning",
+    topics: ["Strength Training", "Speed & Agility", "Injury Prevention", "Recovery Methods"],
+    duration: "2 weeks"
+  },
+  {
+    module: "Module 4",
+    title: "Mental & Psychological Aspects",
+    topics: ["Mental Toughness", "Motivation Techniques", "Team Building", "Leadership Skills"],
+    duration: "2 weeks"
+  },
+  {
+    module: "Module 5",
+    title: "Practical Application",
+    topics: ["Live Coaching Sessions", "Feedback & Evaluation", "Program Design", "Career Development"],
+    duration: "3 weeks"
+  }
+];
+
+const trainers = [
+  {
+    id: 1,
+    name: "Dr. Rajesh Kumar",
+    role: "Program Director",
+    qualifications: "PhD Sports Science, Former National Coach, 20+ years experience",
+    specialties: ["Coaching Methodology", "Sports Psychology", "Program Design"],
+    image: "https://placehold.co/400x400/059669/white?text=RK",
+    certifications: ["ISSA", "NSCA", "FIFA Coaching License"]
+  },
+  {
+    id: 2,
+    name: "Priya Sharma",
+    role: "Lead Instructor",
+    qualifications: "MBA Sports Management, Certified Coach Educator, 15+ years experience",
+    specialties: ["Youth Development", "Coach Education", "Leadership Training"],
+    image: "https://placehold.co/400x400/dc2626/white?text=PS",
+    certifications: ["NCCP", "UEFA B License", "ACSM"]
+  },
+  {
+    id: 3,
+    name: "Vikram Singh",
+    role: "Technical Director",
+    qualifications: "International Level Coach, Sports Psychology Expert, 18+ years experience",
+    specialties: ["Performance Analysis", "Mental Conditioning", "Tactical Training"],
+    image: "https://placehold.co/400x400/7c3aed/white?text=VS",
+    certifications: ["ASCA", "ISSP", "Olympic Coach Certification"]
+  }
+];
+
+const testimonials = [
+  {
+    id: 1,
+    name: "Amit Patel",
+    role: "School Sports Coordinator",
+    quote: "The certification program transformed my coaching approach. I'm now implementing evidence-based methods that have improved our team's performance by 40%.",
+    image: "https://placehold.co/100x100/059669/white?text=AP"
+  },
+  {
+    id: 2,
+    name: "Sneha Gupta",
+    role: "Private Coach",
+    quote: "The mentorship and practical training were invaluable. I've since started my own coaching business and have 50+ clients thanks to the skills I learned.",
+    image: "https://placehold.co/100x100/dc2626/white?text=SG"
+  },
+  {
+    id: 3,
+    name: "Rahul Mehta",
+    role: "College Athletic Director",
+    quote: "Our entire coaching staff went through the program, and the impact on our athletes has been remarkable. The certification is now a requirement for all our coaches.",
+    image: "https://placehold.co/100x100/7c3aed/white?text=RM"
+  }
+];
+
+const certificationBenefits = [
+  "Internationally recognized certification",
+  "Access to exclusive coaching resources and tools",
+  "Lifetime membership to SportEdu Coach Network",
+  "Priority job placement assistance",
+  "Continuing education credits",
+  "Professional liability insurance discounts",
+  "Access to advanced workshops and seminars",
+  "Mentorship from experienced coaches"
+];
+
+const faqs = [
+  {
+    question: "What are the prerequisites for joining the program?",
+    answer: "For the Certified Sports Coach Program, you need a high school diploma and basic sports knowledge. For advanced programs, relevant coaching experience is required."
+  },
+  {
+    question: "Is the certification internationally recognized?",
+    answer: "Yes, our certification is recognized by international sports organizations and coaching associations. We're also working towards additional accreditations."
+  },
+  {
+    question: "What kind of support do you provide after certification?",
+    answer: "We provide lifetime access to our online resources, monthly coaching webinars, job placement assistance, and ongoing mentorship opportunities."
+  },
+  {
+    question: "Can I specialize in a particular sport?",
+    answer: "Yes, while our core curriculum covers universal coaching principles, you can choose sport-specific electives and practical training in your preferred discipline."
+  },
+  {
+    question: "What's the success rate of your graduates?",
+    answer: "95% of our graduates secure coaching positions within 6 months of completion, and 80% report significant career advancement within the first year."
+  },
+  {
+    question: "Do you offer payment plans or scholarships?",
+    answer: "Yes, we offer flexible payment plans and merit-based scholarships for deserving candidates. Please contact us for more details."
+  }
+];
+
 
 const TrainTheTrainersPage = () => {
-  const [selectedModule, setSelectedModule] = useState(null)
-  const [isEnrolling, setIsEnrolling] = useState(false)
+   const [activeTab, setActiveTab] = useState('programs');
+  const [selectedProgram, setSelectedProgram] = useState(null);
+  const [showEnrollmentModal, setShowEnrollmentModal] = useState(false);
+  const [activeFaq, setActiveFaq] = useState(null);
+  const [enrollmentForm, setEnrollmentForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    experience: '',
+    sport: '',
+    program: ''
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEnrollmentForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleEnroll = (program) => {
+    setSelectedProgram(program);
+    setEnrollmentForm(prev => ({ ...prev, program: program.name }));
+    setShowEnrollmentModal(true);
+  };
+
+  const handleSubmitEnrollment = (e) => {
+    e.preventDefault();
+    // Handle enrollment submission
+    console.log('Enrollment submitted:', { ...enrollmentForm });
+    setShowEnrollmentModal(false);
+    // Reset form
+    setEnrollmentForm({
+      name: '',
+      email: '',
+      phone: '',
+      experience: '',
+      sport: '',
+      program: ''
+    });
+  };
+
+  const toggleFaq = (index) => {
+    setActiveFaq(activeFaq === index ? null : index);
+  };
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut"
+      }
+    }
+  };
+
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 60 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+  };
+
+  const slideInLeft = {
+    hidden: { opacity: 0, x: -100 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: "easeOut" } }
+  };
+
+  const slideInRight = {
+    hidden: { opacity: 0, x: 100 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: "easeOut" } }
+  };
 
   return (
-    <div className="bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white min-h-screen antialiased">
-        <Navbar/>
+    <div className="bg-white">
+      <Navbar/>
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4">
-        <div className="max-w-7xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-            className="inline-block px-4 py-2 bg-gradient-to-r from-green-600/20 to-emerald-500/20 rounded-full border border-white/20 text-green-300 text-sm font-medium mb-6"
-          >
-            🎓 Certified Coach Development Program
-          </motion.div>
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.1 }}
-            className="text-4xl md:text-5xl lg:text-6xl font-bold max-w-4xl mx-auto leading-tight"
-          >
-            <span className="block bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
-              Train the Trainers
-            </span>
-            <span className="block bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent mt-4">
-              Empower the Next Generation of Coaches
-            </span>
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.2 }}
-            className="text-xl text-white/80 max-w-3xl mx-auto mt-8 leading-relaxed"
-          >
-            A comprehensive, hands-on certification program for aspiring and current coaches, PE teachers, and sports educators — designed to build world-class coaching capacity in India.
-          </motion.p>
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.3 }}
-            className="mt-10 flex flex-col sm:flex-row gap-4 justify-center"
-          >
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setIsEnrolling(true)}
-              className="px-8 py-4 rounded-2xl bg-gradient-to-r from-green-600 to-emerald-500 text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300"
+      <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden bg-gradient-to-br from-emerald-50 to-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="max-w-4xl mx-auto text-center">
+            <motion.h1 
+              className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
             >
-              Enroll Now – Batch Starting Oct 2025
-            </motion.button>
-            <motion.a
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              href="#curriculum"
-              className="px-8 py-4 rounded-2xl bg-white/10 text-white font-bold backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-all duration-300"
+              Train the <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Trainer</span>
+            </motion.h1>
+            <motion.p 
+              className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
             >
-              View Full Curriculum
-            </motion.a>
-          </motion.div>
+              Become a certified sports coach with our internationally recognized 
+              training programs designed to develop world-class coaching professionals.
+            </motion.p>
+          </div>
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-8 bg-black/20 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+      {/* Program Stats */}
+      {/* <section className="py-16 bg-gradient-to-br from-gray-50 via-white to-gray-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Program Impact
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Transforming coaching professionals since 2011
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={containerVariants}
+            className="grid grid-cols-2 md:grid-cols-4 gap-6"
+          >
             {[
-              { number: "120+", label: "Certified Coaches" },
-              { number: "6", label: "Months Program" },
-              { number: "200+", label: "Hours of Training" },
-              { number: "100%", label: "Placement Support" },
+              { number: 500, label: "Certified Coaches", icon: Users },
+              { number: 95, label: "Success Rate %", icon: Trophy },
+              { number: 150, label: "Partner Institutions", icon: GraduationCap },
+              { number: 12, label: "Years Experience", icon: Award }
             ].map((stat, index) => (
               <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="text-center p-4"
-              >
-                <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white to-white/90 bg-clip-text text-transparent">
-                  {stat.number}
-                </div>
-                <div className="mt-2 text-sm md:text-base text-white/70">{stat.label}</div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Curriculum Section */}
-      <section id="curriculum" className="py-20 px-4">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Program Curriculum</h2>
-            <p className="text-xl text-white/70 max-w-3xl mx-auto">
-              Blend of theory, practical sessions, classroom observation, and live coaching assessments.
-            </p>
-          </motion.div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {MODULES.map((module, index) => (
-              <motion.article
-                key={module.id}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                onClick={() => setSelectedModule(module)}
-                className="group cursor-pointer bg-gradient-to-br from-black/40 to-black/20 p-6 rounded-3xl border border-white/10 backdrop-blur-sm hover:border-white/30 transition-all duration-500"
-              >
-                <div className="text-4xl mb-4">{module.icon}</div>
-                <h3 className="text-xl font-bold mb-2">{module.title}</h3>
-                <p className="text-white/70 text-sm mb-4 leading-relaxed">{module.desc}</p>
-                <div className="text-xs text-green-400 font-medium">{module.duration} • In-person + Online</div>
-              </motion.article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Benefits Section */}
-      <section className="py-20 px-4 bg-black/10">
-        <div className="max-w-5xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Why Join Our Program?</h2>
-            <p className="text-xl text-white/70 max-w-3xl mx-auto">
-              Become part of a national network of elite sports educators.
-            </p>
-          </motion.div>
-          <div className="space-y-4">
-            {BENEFITS.map((benefit, index) => (
-              <motion.div
                 key={index}
-                initial={{ opacity: 0, x: -30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="flex items-start gap-4 p-5 rounded-2xl bg-white/5 border border-white/10"
+                variants={itemVariants}
+                whileHover={{ y: -10, scale: 1.05 }}
+                className="bg-white rounded-2xl p-6 shadow-lg text-center border border-gray-100 hover:border-emerald-200 transition-all duration-300"
               >
-                <div className="text-green-400 mt-1">✓</div>
-                <div className="text-white/90">{benefit}</div>
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mx-auto mb-4">
+                  <stat.icon className="text-white w-6 h-6" />
+                </div>
+                <motion.div 
+                  className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2"
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 1, delay: index * 0.2 }}
+                >
+                  {stat.number}+
+                </motion.div>
+                <p className="text-gray-700 font-medium">{stat.label}</p>
               </motion.div>
             ))}
+          </motion.div>
+        </div>
+      </section> */}
+
+      {/* Navigation Tabs */}
+      <section className="py-12 bg-gradient-to-b from-white to-gray-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-wrap justify-center gap-4 mb-12">
+            {[
+              { id: 'programs', name: 'Programs' },
+              { id: 'curriculum', name: 'Curriculum' },
+              { id: 'trainers', name: 'Master Trainers' },
+              { id: 'benefits', name: 'Certification Benefits' },
+              { id: 'faq', name: 'FAQ' }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-6 py-3 rounded-full font-medium transition-all duration-300 ${
+                  activeTab === tab.id
+                    ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {tab.name}
+              </button>
+            ))}
           </div>
+
+          {/* Programs Tab */}
+          {activeTab === 'programs' && (
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={containerVariants}
+              className="grid grid-cols-1 lg:grid-cols-2 gap-8"
+            >
+              {programs.map((program) => (
+                <motion.div
+                  key={program.id}
+                  variants={itemVariants}
+                  whileHover={{ y: -10, scale: 1.02 }}
+                  className="bg-white rounded-3xl overflow-hidden shadow-2xl hover:shadow-emerald-500/10 transition-all duration-500"
+                >
+                  <div className="h-64 overflow-hidden relative">
+                    <img 
+                      src={program.image} 
+                      alt={program.name} 
+                      className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
+                    />
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-6">
+                      <h3 className="text-2xl font-bold text-white mb-2">{program.name}</h3>
+                      <div className="flex items-center text-white/90 text-sm">
+                        <Clock className="w-4 h-4 mr-2" />
+                        {program.duration} • {program.format}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-8">
+                    <div className="flex items-center mb-4">
+                      <span className="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full">
+                        {program.level}
+                      </span>
+                      <span className="ml-3 text-sm text-gray-600">Next Batch: {program.nextBatch}</span>
+                    </div>
+                    <p className="text-gray-600 mb-6 leading-relaxed">{program.description}</p>
+                    
+                    <div className="mb-6">
+                      <h4 className="font-bold text-gray-900 mb-3">Key Features:</h4>
+                      <ul className="space-y-2">
+                        {program.features.map((feature, index) => (
+                          <li key={index} className="flex items-center">
+                            <CheckCircle className="w-4 h-4 text-emerald-600 mr-3 flex-shrink-0" />
+                            <span className="text-gray-700">{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="text-2xl font-bold text-emerald-600">₹{program.price.toLocaleString()}</div>
+                      <motion.button
+                        onClick={() => handleEnroll(program)}
+                        className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        Enroll Now
+                      </motion.button>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+
+          {/* Curriculum Tab */}
+          {activeTab === 'curriculum' && (
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={containerVariants}
+              className="max-w-4xl mx-auto"
+            >
+              <motion.div
+                variants={itemVariants}
+                className="text-center mb-12"
+              >
+                <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+                  Comprehensive Curriculum
+                </h3>
+                <p className="text-gray-600">
+                  Our 12-week program covers all essential aspects of modern sports coaching
+                </p>
+              </motion.div>
+              
+              <motion.div
+                variants={containerVariants}
+                className="space-y-6"
+              >
+                {curriculum.map((module, index) => (
+                  <motion.div
+                    key={module.module}
+                    variants={itemVariants}
+                    whileHover={{ y: -5 }}
+                    className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:border-emerald-200 transition-all duration-300"
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold mr-4">
+                          {module.module.split(' ')[1]}
+                        </div>
+                        <div>
+                          <h4 className="text-xl font-bold text-gray-900">{module.title}</h4>
+                          <p className="text-gray-600">{module.duration}</p>
+                        </div>
+                      </div>
+                      <div className="text-emerald-600">
+                        <BookOpen className="w-6 h-6" />
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {module.topics.map((topic, topicIndex) => (
+                        <span key={topicIndex} className="px-3 py-1 bg-emerald-100 text-emerald-800 text-sm rounded-full">
+                          {topic}
+                        </span>
+                      ))}
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+              
+              <motion.div
+                variants={itemVariants}
+                className="mt-12 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-3xl p-8 text-white text-center"
+              >
+                <GraduationCap className="w-12 h-12 mx-auto mb-4" />
+                <h4 className="text-2xl font-bold mb-2">Ready to Start Your Coaching Journey?</h4>
+                <p className="opacity-90 mb-6">Enroll in our flagship Certified Sports Coach Program today!</p>
+                <motion.button
+                  onClick={() => handleEnroll(programs[0])}
+                  className="bg-white text-emerald-600 hover:bg-gray-100 px-8 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Enroll Now
+                </motion.button>
+              </motion.div>
+            </motion.div>
+          )}
+
+          {/* Master Trainers Tab */}
+          {activeTab === 'trainers' && (
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={containerVariants}
+              className="grid grid-cols-1 md:grid-cols-3 gap-8"
+            >
+              {trainers.map((trainer) => (
+                <motion.div
+                  key={trainer.id}
+                  variants={itemVariants}
+                  whileHover={{ y: -10, scale: 1.03 }}
+                  className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 group"
+                >
+                  <div className="h-64 bg-gray-200 relative overflow-hidden">
+                    <img 
+                      src={trainer.image} 
+                      alt={trainer.name} 
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                    <motion.div 
+                      className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6"
+                      whileHover={{ opacity: 1 }}
+                    >
+                      <div className="text-white">
+                        <p className="font-bold text-xl mb-1">{trainer.name}</p>
+                        <p className="text-sm opacity-90">{trainer.role}</p>
+                      </div>
+                    </motion.div>
+                  </div>
+                  <div className="p-6">
+                    <p className="text-gray-600 text-sm mb-4">{trainer.qualifications}</p>
+                    <div className="mb-4">
+                      <h4 className="font-bold text-gray-900 mb-2">Specialties:</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {trainer.specialties.map((specialty, index) => (
+                          <span key={index} className="px-2 py-1 bg-emerald-100 text-emerald-800 text-xs rounded">
+                            {specialty}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-900 mb-2">Certifications:</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {trainer.certifications.map((cert, index) => (
+                          <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
+                            {cert}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+
+          {/* Certification Benefits Tab */}
+          {activeTab === 'benefits' && (
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={containerVariants}
+              className="max-w-4xl mx-auto"
+            >
+              <motion.div
+                variants={itemVariants}
+                className="text-center mb-12"
+              >
+                <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+                  Certification Benefits
+                </h3>
+                <p className="text-gray-600">
+                  What you get with your SportEdu certification
+                </p>
+              </motion.div>
+              
+              <motion.div
+                variants={containerVariants}
+                className="grid grid-cols-1 md:grid-cols-2 gap-6"
+              >
+                {certificationBenefits.map((benefit, index) => (
+                  <motion.div
+                    key={index}
+                    variants={itemVariants}
+                    whileHover={{ x: 10 }}
+                    className="flex items-start p-6 bg-white rounded-2xl shadow-lg border border-gray-100 hover:border-emerald-200 transition-all duration-300"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center mr-4 mt-1 flex-shrink-0">
+                      <CheckCircle className="text-emerald-600 w-4 h-4" />
+                    </div>
+                    <span className="text-gray-700 text-lg">{benefit}</span>
+                  </motion.div>
+                ))}
+              </motion.div>
+              
+              <motion.div
+                variants={itemVariants}
+                className="mt-12 text-center"
+              >
+                <div className="inline-block bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-8 py-4 rounded-2xl">
+                  <Award className="w-8 h-8 mx-auto mb-2" />
+                  <h4 className="text-xl font-bold">Internationally Recognized</h4>
+                  <p className="opacity-90 mt-1">Valid across 50+ countries</p>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+
+          {/* FAQ Tab */}
+          {activeTab === 'faq' && (
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={containerVariants}
+              className="max-w-3xl mx-auto"
+            >
+              <div className="space-y-4">
+                {faqs.map((faq, index) => (
+                  <motion.div
+                    key={index}
+                    variants={itemVariants}
+                    className="border border-gray-200 rounded-2xl overflow-hidden"
+                  >
+                    <button
+                      onClick={() => toggleFaq(index)}
+                      className="w-full p-6 text-left flex justify-between items-center bg-white hover:bg-gray-50 transition-colors duration-200"
+                    >
+                      <h3 className="text-lg font-medium text-gray-900">{faq.question}</h3>
+                      <motion.div
+                        animate={{ rotate: activeFaq === index ? 180 : 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="text-emerald-600"
+                      >
+                        <ChevronRight className="w-5 h-5" />
+                      </motion.div>
+                    </button>
+                    <motion.div
+                      initial={false}
+                      animate={{
+                        height: activeFaq === index ? 'auto' : 0,
+                        opacity: activeFaq === index ? 1 : 0
+                      }}
+                      transition={{ duration: 0.3 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="p-6 pt-0 text-gray-600 bg-gray-50">
+                        {faq.answer}
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
         </div>
       </section>
 
       {/* Testimonials */}
-      <section className="py-20 px-4">
-        <div className="max-w-5xl mx-auto">
+      <section className="py-20 bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8 }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl font-bold mb-4">Hear From Our Graduates</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+              Success Stories
+            </h2>
+            <p className="text-xl opacity-90 max-w-2xl mx-auto">
+              Hear from our certified coaches
+            </p>
           </motion.div>
-          <div className="grid md:grid-cols-2 gap-8">
-            {TESTIMONIALS.map((t, index) => (
+
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={containerVariants}
+            className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          >
+            {testimonials.map((testimonial) => (
               <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.2 }}
-                className="bg-gradient-to-br from-black/30 to-black/10 p-6 rounded-3xl border border-white/10 backdrop-blur-sm"
+                key={testimonial.id}
+                variants={itemVariants}
+                whileHover={{ y: -10, scale: 1.05 }}
+                className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 text-center border border-white/20 hover:border-white/40 transition-all duration-500"
               >
-                <div className="text-xl mb-3 text-white/80 relative">
-                  <span className="absolute -left-6 -top-2 text-4xl text-white/20">"</span>
-                  {t.quote}
-                  <span className="absolute -right-6 -bottom-4 text-4xl text-white/20">"</span>
-                </div>
-                <div className="flex items-center gap-4 mt-4">
-                  <img
-                    src={t.avatar}
-                    alt={t.author}
-                    className="w-12 h-12 rounded-full object-cover"
+                <div className="w-20 h-20 mx-auto mb-6 overflow-hidden rounded-full">
+                  <img 
+                    src={testimonial.image} 
+                    alt={testimonial.name} 
+                    className="w-full h-full object-cover"
                   />
-                  <div>
-                    <div className="font-semibold text-white">{t.author}</div>
-                    <div className="text-white/60">{t.role}</div>
-                  </div>
+                </div>
+                <blockquote className="text-lg mb-6 italic opacity-90">
+                  "{testimonial.quote}"
+                </blockquote>
+                <div>
+                  <p className="font-bold text-lg">{testimonial.name}</p>
+                  <p className="opacity-75">{testimonial.role}</p>
                 </div>
               </motion.div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h3 className="text-3xl font-bold mb-6">Ready to Become a Certified Coach?</h3>
-          <p className="text-xl text-white/80 mb-10">
-            Join our next batch and gain the skills, certification, and network to transform sports education in India.
-          </p>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setIsEnrolling(true)}
-            className="px-8 py-4 rounded-2xl bg-gradient-to-r from-green-600 to-emerald-500 text-white font-bold shadow-lg hover:shadow-xl text-lg"
-          >
-            📩 Apply Now – Limited Seats
-          </motion.button>
-          <div className="mt-6 text-white/60 text-sm">
-            Program Fee: ₹25,000 (includes certification, kit, and 6-month mentorship)
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Enrollment Modal */}
-      <AnimatePresence>
-        {isEnrolling && (
+      {showEnrollmentModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-            onClick={() => setIsEnrolling(false)}
+            initial={{ opacity: 0, scale: 0.9, y: 50 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="bg-white rounded-3xl max-w-2xl w-full p-8 shadow-2xl"
           >
-            <motion.div
-              initial={{ y: 50, scale: 0.95 }}
-              animate={{ y: 0, scale: 1 }}
-              exit={{ y: 50, scale: 0.95 }}
-              onClick={(e) => e.stopPropagation()}
-              className="relative z-60 w-full max-w-2xl rounded-3xl bg-gradient-to-br from-black/60 to-black/40 border border-white/20 backdrop-blur-xl p-8 shadow-2xl"
-            >
-              <button
-                onClick={() => setIsEnrolling(false)}
-                className="absolute top-6 right-6 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/70 hover:bg-white/20"
-                aria-label="Close"
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-gray-900">Enroll in {selectedProgram?.name}</h3>
+              <button 
+                onClick={() => setShowEnrollmentModal(false)}
+                className="text-gray-500 hover:text-gray-700 text-2xl"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                ✕
               </button>
-              <div className="text-center">
-                <div className="text-2xl font-bold mb-2">Apply for Train the Trainers</div>
-                <p className="text-white/70 mb-6">Batch starting October 2025 • Mumbai & Thane</p>
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault()
-                    alert("Thank you! Our team will contact you shortly with next steps.")
-                    setIsEnrolling(false)
-                  }}
-                  className="space-y-4 text-left"
-                >
+            </div>
+            
+            <div className="mb-6 p-4 bg-emerald-50 rounded-xl">
+              <div className="flex items-center mb-2">
+                <Clock className="w-5 h-5 text-emerald-600 mr-2" />
+                <span className="font-medium text-emerald-800">{selectedProgram?.duration} • {selectedProgram?.format}</span>
+              </div>
+              <div className="flex items-center">
+                <Target className="w-5 h-5 text-emerald-600 mr-2" />
+                <span className="text-emerald-800">Level: {selectedProgram?.level}</span>
+              </div>
+            </div>
+            
+            <form onSubmit={handleSubmitEnrollment} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-lg font-medium text-gray-700 mb-3">Full Name *</label>
                   <input
                     type="text"
-                    placeholder="Full Name"
-                    className="w-full p-3 rounded-xl bg-white/5 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:border-green-400"
+                    name="name"
+                    value={enrollmentForm.name}
+                    onChange={handleInputChange}
                     required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    placeholder="John Doe"
                   />
+                </div>
+                <div>
+                  <label className="block text-lg font-medium text-gray-700 mb-3">Email *</label>
                   <input
                     type="email"
-                    placeholder="Email"
-                    className="w-full p-3 rounded-xl bg-white/5 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:border-green-400"
+                    name="email"
+                    value={enrollmentForm.email}
+                    onChange={handleInputChange}
                     required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    placeholder="john@example.com"
                   />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-lg font-medium text-gray-700 mb-3">Phone *</label>
                   <input
                     type="tel"
-                    placeholder="Phone (+91 XXXX-XXXXXX)"
-                    className="w-full p-3 rounded-xl bg-white/5 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:border-green-400"
+                    name="phone"
+                    value={enrollmentForm.phone}
+                    onChange={handleInputChange}
                     required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    placeholder="(123) 456-7890"
                   />
-                  <select
-                    className="w-full p-3 rounded-xl bg-white/5 border border-white/20 text-white focus:outline-none focus:border-green-400"
-                    required
-                  >
-                    <option value="">Current Role</option>
-                    <option value="teacher">School PE Teacher</option>
-                    <option value="coach">Private Coach</option>
-                    <option value="student">Sports Student</option>
-                    <option value="other">Other</option>
-                  </select>
-                  <button
-                    type="submit"
-                    className="w-full py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-500 text-white font-bold"
-                  >
-                    Submit Application
-                  </button>
-                </form>
+                </div>
+                <div>
+                  <label className="block text-lg font-medium text-gray-700 mb-3">Years of Coaching Experience</label>
+                  <input
+                    type="number"
+                    name="experience"
+                    value={enrollmentForm.experience}
+                    onChange={handleInputChange}
+                    min="0"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    placeholder="0"
+                  />
+                </div>
               </div>
-            </motion.div>
+              
+              <div>
+                <label className="block text-lg font-medium text-gray-700 mb-3">Primary Sport *</label>
+                <select
+                  name="sport"
+                  value={enrollmentForm.sport}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                >
+                  <option value="">Select your primary sport</option>
+                  <option value="cricket">Cricket</option>
+                  <option value="football">Football</option>
+                  <option value="basketball">Basketball</option>
+                  <option value="swimming">Swimming</option>
+                  <option value="tennis">Tennis</option>
+                  <option value="athletics">Athletics</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              
+              <div className="bg-gray-50 p-4 rounded-xl">
+                <h4 className="font-bold text-gray-900 mb-2">Program Details:</h4>
+                <p className="text-gray-700">{selectedProgram?.name}</p>
+                <p className="text-emerald-600 font-bold mt-1">₹{selectedProgram?.price.toLocaleString()}</p>
+              </div>
+              
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="terms"
+                  required
+                  className="w-5 h-5 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
+                />
+                <label htmlFor="terms" className="ml-3 text-gray-700">
+                  I agree to the <a href="#" className="text-emerald-600 hover:underline">terms and conditions</a>
+                </label>
+              </div>
+              
+              <motion.button
+                type="submit"
+                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-4 rounded-xl font-medium text-lg transition-all duration-300"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Complete Enrollment
+              </motion.button>
+            </form>
           </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Footer CTA */}
+        </div>
+      )}
       <Footer/>
     </div>
-  )
+  );
 }
 
 export default TrainTheTrainersPage

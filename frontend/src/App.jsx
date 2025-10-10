@@ -11,7 +11,6 @@ import InSchoolProgram from "./pages/InSchoolProgram"
 import ContactUs from "./pages/ContactUs"
 import LoginPage from "./pages/LoginPage"
 import DashboardPage from "./pages/DashboardPage"
-import TempPage from "./pages/TempPage"
 function App() {
 
   return (
@@ -29,7 +28,7 @@ function App() {
         <Route path = '/contact' element = {<ContactUs/>} />
         <Route path = '/admin/login' element = {<LoginPage/>} />
         <Route path = '/admin/dashboard' element = {<DashboardPage/>} />
-        <Route path = '/temp' element = {<TempPage/>} />
+    
 
         
       </Routes>

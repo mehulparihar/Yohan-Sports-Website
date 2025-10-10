@@ -1,367 +1,786 @@
-import React from 'react'
-import { useState, useEffect, useCallback } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import Footer from '../components/Footer'
-import Navbar from '../components/Navbar'
+'use client';
 
-// Mock Events Data (enhanced from your existing code)
-const EVENTS = [
+import { useState, useEffect, useRef } from 'react';
+import { motion, useAnimation, useInView, useScroll, useTransform } from 'framer-motion';
+import { Calendar, Users, Trophy, Award, Star, MapPin, Clock, Play, CheckCircle, TrendingUp, Shield } from 'lucide-react';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
+
+// Mock data for all event types
+const featuredEvents = [
   {
-    id: "e1",
-    title: "🏆 Inter-school Tournament Finals",
-    date: "2025-10-04",
-    time: "9:00 AM – 5:00 PM",
-    location: "Wadala Stadium, Mumbai",
-    category: "tournament",
-    color: "from-yellow-500 to-orange-500",
-    image: "https://images.unsplash.com/photo-1549060279-7e16338922a7?auto=format&fit=crop&w=600",
-    description: "The grand finale of our annual inter-school championship featuring top teams from 50+ partner schools.",
+    id: 1,
+    title: "National Sports Championship 2024",
+    date: "June 15-17, 2024",
+    time: "9:00 AM - 6:00 PM",
+    location: "Central Sports Complex, Athletic City",
+    description: "Our flagship annual tournament featuring cricket, football, basketball, and swimming competitions with participants from 50+ schools.",
+    image: "https://placehold.co/800x500/059669/white?text=National+Championship",
+    category: "Tournament",
+    type: "featured",
     registrationOpen: true,
+    participants: "500+",
+    highlights: "National-level competition, professional referees, live streaming"
+  }
+];
+
+const tournaments = [
+  {
+    id: 2,
+    title: "Inter-School Cricket League",
+    date: "July 5-20, 2024",
+    time: "4:00 PM - 7:00 PM",
+    location: "SportEdu Cricket Ground",
+    description: "Weekly cricket matches between top school teams in the region.",
+    image: "https://placehold.co/600x400/dc2626/white?text=Cricket+League",
+    category: "Tournament",
+    type: "tournament",
+    registrationOpen: true,
+    teams: 16,
+    price: "₹2,000 per team"
   },
   {
-    id: "e2",
-    title: "👨‍🏫 Summer Coaches Clinic",
-    date: "2025-11-12",
-    time: "10:00 AM – 4:00 PM",
-    location: "Thane Centre",
-    category: "workshop",
-    color: "from-blue-500 to-cyan-500",
-    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600",
-    description: "Professional development workshop for coaches with international guest speakers and certification.",
+    id: 3,
+    title: "Youth Football Cup",
+    date: "August 10-12, 2024",
+    time: "8:00 AM - 6:00 PM",
+    location: "City Football Stadium",
+    description: "Age-group football tournament for U-14, U-16, and U-19 categories.",
+    image: "https://placehold.co/600x400/7c3aed/white?text=Football+Cup",
+    category: "Tournament",
+    type: "tournament",
     registrationOpen: true,
+    teams: 24,
+    price: "₹1,500 per team"
   },
   {
-    id: "e3",
-    title: "🌟 Scholarship Trials",
-    date: "2025-12-08",
-    time: "8:00 AM – 2:00 PM",
-    location: "All Centres",
-    category: "scholarship",
-    color: "from-purple-500 to-pink-500",
-    image: "https://images.unsplash.com/photo-1518608055487-1baca02035f5?auto=format&fit=crop&w=600",
-    description: "Merit-based trials for full and partial scholarships in Cricket, Football, and Basketball academies.",
-    registrationOpen: true,
-  },
-  {
-    id: "e4",
-    title: "🏅 National Youth Sports Festival",
-    date: "2026-01-18",
-    time: "11:00 AM – 6:00 PM",
-    location: "Mumbai Sports Complex",
-    category: "festival",
-    color: "from-green-500 to-emerald-500",
-    image: "https://images.unsplash.com/photo-1546551373-84025920336?auto=format&fit=crop&w=600",
-    description: "A celebration of youth sports with exhibitions, clinics, and showcase matches across 5 disciplines.",
+    id: 4,
+    title: "Swimming Gala",
+    date: "September 5, 2024",
+    time: "10:00 AM - 4:00 PM",
+    location: "Olympic Swimming Pool",
+    description: "Individual swimming competition across multiple age groups and stroke categories.",
+    image: "https://placehold.co/600x400/0891b2/white?text=Swimming+Gala",
+    category: "Tournament",
+    type: "tournament",
     registrationOpen: false,
-  },
-  {
-    id: "e5",
-    title: "🎯 Parent-Athlete Orientation",
-    date: "2025-09-20",
-    time: "5:30 PM – 7:00 PM",
-    location: "Online (Zoom)",
-    category: "info",
-    color: "from-indigo-500 to-blue-500",
-    image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=600",
-    description: "Learn about our programs, training philosophy, and how to support your child's athletic journey.",
-    registrationOpen: true,
-  },
-  {
-    id: "e6",
-    title: "🤝 School Partnership Summit",
-    date: "2025-10-25",
-    time: "9:30 AM – 3:00 PM",
-    location: "Bhakti Park, Wadala",
-    category: "business",
-    color: "from-gray-700 to-gray-900",
-    image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600",
-    description: "For school leaders and PE coordinators: explore curriculum integration, infrastructure, and co-branded programs.",
-    registrationOpen: true,
-  },
-]
+    participants: 120,
+    price: "₹800 per participant"
+  }
+];
 
-const CATEGORIES = [
-  { id: "all", name: "All Events", icon: "📅" },
-  { id: "tournament", name: "Tournaments", icon: "🏆" },
-  { id: "workshop", name: "Workshops", icon: "👨‍🏫" },
-  { id: "scholarship", name: "Scholarships", icon: "🎓" },
-  { id: "festival", name: "Festivals", icon: "🎪" },
-  { id: "info", name: "Info Sessions", icon: "ℹ️" },
-  { id: "business", name: "For Schools", icon: "🏫" },
-]
+const camps = [
+  {
+    id: 5,
+    title: "Summer Sports Camp",
+    date: "July 1-15, 2024",
+    time: "8:00 AM - 2:00 PM",
+    location: "SportEdu Academy, Main Campus",
+    description: "Intensive 2-week summer camp focusing on skill development, fitness, and team building for ages 8-16.",
+    image: "https://placehold.co/600x400/f59e0b/white?text=Summer+Camp",
+    category: "Camp",
+    type: "camp",
+    registrationOpen: true,
+    spotsAvailable: 120,
+    price: "₹8,000 per participant"
+  },
+  {
+    id: 6,
+    title: "Winter Training Camp",
+    date: "December 20-30, 2024",
+    time: "9:00 AM - 3:00 PM",
+    location: "Indoor Sports Complex",
+    description: "Indoor training camp focusing on technique refinement and mental conditioning during winter break.",
+    image: "https://placehold.co/600x400/10b981/white?text=Winter+Camp",
+    category: "Camp",
+    type: "camp",
+    registrationOpen: false,
+    spotsAvailable: 80,
+    price: "₹6,500 per participant"
+  }
+];
+
+const workshops = [
+  {
+    id: 7,
+    title: "Coaching Certification Workshop",
+    date: "August 5-7, 2024",
+    time: "10:00 AM - 4:00 PM",
+    location: "SportEdu Training Center",
+    description: "Professional development workshop for aspiring sports coaches. Learn modern coaching techniques and methodologies.",
+    image: "https://placehold.co/600x400/8b5cf6/white?text=Coaching+Workshop",
+    category: "Workshop",
+    type: "workshop",
+    registrationOpen: true,
+    spotsAvailable: 50,
+    price: "₹12,000 per participant"
+  },
+  {
+    id: 8,
+    title: "Sports Nutrition Seminar",
+    date: "July 25, 2024",
+    time: "2:00 PM - 5:00 PM",
+    location: "Conference Hall, SportEdu Academy",
+    description: "Learn about proper nutrition, hydration, and recovery strategies for optimal athletic performance.",
+    image: "https://placehold.co/600x400/ec4899/white?text=Nutrition+Seminar",
+    category: "Workshop",
+    type: "workshop",
+    registrationOpen: true,
+    spotsAvailable: 100,
+    price: "₹2,500 per participant"
+  }
+];
+
+const communityEvents = [
+  {
+    id: 9,
+    title: "Community Sports Day",
+    date: "October 15, 2024",
+    time: "9:00 AM - 5:00 PM",
+    location: "City Park Grounds",
+    description: "Free community event promoting sports participation and healthy living for all ages with fun games and activities.",
+    image: "https://placehold.co/600x400/059669/white?text=Community+Day",
+    category: "Community",
+    type: "community",
+    registrationOpen: true,
+    price: "Free"
+  },
+  {
+    id: 10,
+    title: "Sports Career Guidance Session",
+    date: "November 10, 2024",
+    time: "3:00 PM - 6:00 PM",
+    location: "Grand Auditorium",
+    description: "Interactive session for students and parents about career opportunities in sports and sports management.",
+    image: "https://placehold.co/600x400/dc2626/white?text=Career+Session",
+    category: "Community",
+    type: "community",
+    registrationOpen: true,
+    price: "Free"
+  }
+];
+
+const pastEvents = [
+  {
+    id: 11,
+    title: "Winter Sports Festival 2023",
+    date: "December 10-12, 2023",
+    location: "SportEdu Academy",
+    description: "Annual winter festival featuring indoor sports, workshops, and family activities.",
+    image: "https://placehold.co/600x400/f59e0b/white?text=Winter+Festival+2023",
+    participants: "350+",
+    highlights: "Swimming championships, basketball finals, coaching clinics",
+    type: "past"
+  },
+  {
+    id: 12,
+    title: "Youth Leadership Summit 2023",
+    date: "November 5, 2023",
+    location: "Grand Convention Center",
+    description: "One-day summit focusing on leadership development through sports for young athletes.",
+    image: "https://placehold.co/600x400/10b981/white?text=Leadership+Summit+2023",
+    participants: "200+",
+    highlights: "Keynote speakers, panel discussions, networking sessions",
+    type: "past"
+  },
+  {
+    id: 13,
+    title: "National Inter-School Tournament 2023",
+    date: "September 22-24, 2023",
+    location: "State Sports Stadium",
+    description: "Prestigious tournament bringing together top school teams from across the country.",
+    image: "https://placehold.co/600x400/8b5cf6/white?text=Inter-School+2023",
+    participants: "450+",
+    highlights: "42 schools participated, 8 sports disciplines, national media coverage",
+    type: "past"
+  }
+];
+
+const eventStats = [
+  { number: 45, label: "Events Organized", icon: Calendar },
+  { number: 5000, label: "Participants", icon: Users },
+  { number: 150, label: "Schools Involved", icon: Trophy },
+  { number: 12, label: "Years of Excellence", icon: Award }
+];
 
 const EventsPage = () => {
-  const [activeCategory, setActiveCategory] = useState("all")
-  const [searchTerm, setSearchTerm] = useState("")
-  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false)
-  const [selectedEvent, setSelectedEvent] = useState(null)
-const [clickedItem, setClickedItem] = useState(null)
+  const [activeTab, setActiveTab] = useState('all');
+  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const eventsRef = useRef(null);
 
-  const filteredEvents = EVENTS.filter(event => {
-    const matchesCategory = activeCategory === "all" || event.category === activeCategory
-    const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          event.location.toLowerCase().includes(searchTerm.toLowerCase())
-    return matchesCategory && matchesSearch
-  })
+  // Get all events based on active tab
+  const getAllEvents = () => {
+    switch (activeTab) {
+      case 'tournaments':
+        return tournaments;
+      case 'camps':
+        return camps;
+      case 'workshops':
+        return workshops;
+      case 'community':
+        return communityEvents;
+      case 'past':
+        return pastEvents;
+      default:
+        return [...tournaments, ...camps, ...workshops, ...communityEvents];
+    }
+  };
+
+  const currentEvents = getAllEvents();
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut"
+      }
+    }
+  };
+
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 60 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+  };
 
   const handleRegister = (event) => {
-    setSelectedEvent(event)
-    setIsRegisterModalOpen(true)
-  }
+    setSelectedEvent(event);
+    setShowRegistrationModal(true);
+  };
 
-  const formatDate = (dateString) => {
-    const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }
-    return new Date(dateString).toLocaleDateString('en-IN', options)
-  }
-  const handleProgramClick = useCallback((program) => {
-      setClickedItem(program)
-    }, [])
+  // Custom counter hook
+  const useCounter = (end, duration = 2000) => {
+    const [count, setCount] = useState(0);
+    
+    useEffect(() => {
+      let start = 0;
+      const increment = end / (duration / 16);
+      
+      const timer = setInterval(() => {
+        start += increment;
+        if (start >= end) {
+          setCount(end);
+          clearInterval(timer);
+        } else {
+          setCount(Math.ceil(start));
+        }
+      }, 16);
+      
+      return () => clearInterval(timer);
+    }, [end, duration]);
+    
+    return count;
+  };
 
   return (
-    <div className="bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white min-h-screen antialiased">
-       <Navbar onProgramSelect={handleProgramClick} theme="dark" />
+    <div className="bg-white">
+      <Navbar/>
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4">
-        <div className="max-w-7xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-            className="inline-block px-4 py-2 bg-gradient-to-r from-blue-600/20 to-indigo-500/20 rounded-full border border-white/20 text-blue-300 text-sm font-medium mb-6"
-          >
-            📅 Upcoming Events
-          </motion.div>
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.1 }}
-            className="text-4xl md:text-5xl lg:text-6xl font-bold max-w-4xl mx-auto leading-tight"
-          >
-            <span className="block bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
-              Join the Movement
-            </span>
-            <span className="block bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent mt-4">
-              Play. Learn. Grow.
-            </span>
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.2 }}
-            className="text-xl text-white/80 max-w-3xl mx-auto mt-8 leading-relaxed"
-          >
-            From tournaments to workshops, our events bring together athletes, coaches, parents, and schools to celebrate sports and development.
-          </motion.p>
-        </div>
-      </section>
-
-      {/* Filters & Search */}
-      <section className="px-4 mb-12">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row gap-4 mb-8">
-            {/* Category Filters */}
-            <div className="flex flex-wrap gap-2 flex-1">
-              {CATEGORIES.map((cat) => (
-                <motion.button
-                  key={cat.id}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => setActiveCategory(cat.id)}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
-                    activeCategory === cat.id
-                      ? "bg-gradient-to-r from-indigo-600 to-cyan-500 text-white shadow-lg"
-                      : "bg-white/10 text-white/80 hover:bg-white/20"
-                  }`}
-                >
-                  <span>{cat.icon}</span>
-                  {cat.name}
-                </motion.button>
-              ))}
-            </div>
-            {/* Search */}
-            <div className="md:w-80">
-              <input
-                type="text"
-                placeholder="Search events..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full p-3 rounded-xl bg-white/5 border border-white/20 text-white placeholder-white/50 focus:border-indigo-400 focus:outline-none"
-              />
-            </div>
+      <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden bg-gradient-to-br from-emerald-50 to-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="max-w-4xl mx-auto text-center">
+            <motion.h1 
+              className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              Sports <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Events</span>
+            </motion.h1>
+            <motion.p 
+              className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+            >
+              Discover our comprehensive calendar of tournaments, camps, workshops, 
+              community events, and past highlights that make us the premier sports education provider.
+            </motion.p>
           </div>
         </div>
       </section>
 
-      {/* Events Grid */}
-      <section className="px-4 pb-20">
-        <div className="max-w-7xl mx-auto">
-          {filteredEvents.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-20"
-            >
-              <div className="text-5xl mb-4">🔍</div>
-              <h3 className="text-2xl font-bold mb-2">No events found</h3>
-              <p className="text-white/70">Try a different category or search term.</p>
-            </motion.div>
-          ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredEvents.map((event, index) => (
+      {/* Event Stats */}
+      {/* <section className="py-16 bg-gradient-to-br from-gray-50 via-white to-gray-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Our Event Impact
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Years of organizing world-class sports events and experiences
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={containerVariants}
+            className="grid grid-cols-2 md:grid-cols-4 gap-6"
+          >
+            {eventStats.map((stat, index) => {
+              const count = useCounter(stat.number);
+              return (
                 <motion.div
-                  key={event.id}
-                  initial={{ opacity: 0, y: 40 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  className="group bg-gradient-to-br from-black/40 to-black/20 p-6 rounded-3xl border border-white/10 backdrop-blur-sm hover:border-white/30 transition-all duration-500 overflow-hidden relative"
+                  key={index}
+                  variants={itemVariants}
+                  whileHover={{ y: -10, scale: 1.05 }}
+                  className="bg-white rounded-2xl p-6 shadow-lg text-center border border-gray-100 hover:border-emerald-200 transition-all duration-300"
                 >
-                  <div className="relative rounded-2xl overflow-hidden mb-5">
-                    <img
-                      src={event.image}
-                      alt={event.title}
-                      className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-                    <div className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r ${event.color} text-white`}>
-                      {CATEGORIES.find(c => c.id === event.category)?.name || "Event"}
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mx-auto mb-4">
+                    <stat.icon className="text-white w-6 h-6" />
+                  </div>
+                  <motion.div 
+                    className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2"
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 1, delay: index * 0.2 }}
+                  >
+                    {count}+
+                  </motion.div>
+                  <p className="text-gray-700 font-medium">{stat.label}</p>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        </div>
+      </section> */}
+
+      {/* Featured Event */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Featured Event
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Our flagship annual championship
+            </p>
+          </motion.div>
+
+          {featuredEvents.map((event) => (
+            <motion.div
+              key={event.id}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8 }}
+              className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-3xl overflow-hidden shadow-2xl"
+            >
+              <div className="grid grid-cols-1 lg:grid-cols-2">
+                <div className="h-96 lg:h-auto">
+                  <img 
+                    src={event.image} 
+                    alt={event.title} 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-12 text-white">
+                  <div className="mb-4">
+                    <span className="px-4 py-2 bg-white/20 rounded-full text-sm font-bold">
+                      Featured Event
+                    </span>
+                  </div>
+                  <h3 className="text-3xl font-bold mb-4">{event.title}</h3>
+                  <div className="space-y-3 mb-6">
+                    <div className="flex items-center">
+                      <Calendar className="w-5 h-5 mr-3" />
+                      <span>{event.date}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Clock className="w-5 h-5 mr-3" />
+                      <span>{event.time}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <MapPin className="w-5 h-5 mr-3" />
+                      <span>{event.location}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Users className="w-5 h-5 mr-3" />
+                      <span>{event.participants} participants expected</span>
                     </div>
                   </div>
-                  <div className="space-y-4">
-                    <div>
-                      <div className="text-sm text-indigo-300 font-medium">{formatDate(event.date)}</div>
-                      <h3 className="text-xl font-bold mt-1">{event.title}</h3>
-                      <div className="flex items-center gap-2 text-white/80 text-sm mt-2">
-                        <span>📍</span>
-                        <span>{event.location}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-white/80 text-sm">
-                        <span>⏰</span>
-                        <span>{event.time}</span>
-                      </div>
+                  <p className="mb-8 opacity-90 leading-relaxed">{event.description}</p>
+                  <div className="mb-8 p-4 bg-white/10 rounded-xl">
+                    <h4 className="font-bold mb-2">Event Highlights:</h4>
+                    <p className="text-sm opacity-90">{event.highlights}</p>
+                  </div>
+                  <motion.button
+                    onClick={() => handleRegister(event)}
+                    className="bg-white text-emerald-600 hover:bg-gray-100 px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 shadow-lg hover:shadow-xl"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Register Now
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* Events Navigation Tabs */}
+      <section className="py-12 bg-gradient-to-b from-white to-gray-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-wrap justify-center gap-4 mb-12">
+            {[
+              { id: 'all', name: 'All Events' },
+              { id: 'tournaments', name: 'Tournaments' },
+              { id: 'camps', name: 'Camps' },
+              { id: 'workshops', name: 'Workshops' },
+              { id: 'community', name: 'Community' },
+              { id: 'past', name: 'Past Events' }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-6 py-3 rounded-full font-medium transition-all duration-300 ${
+                  activeTab === tab.id
+                    ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {tab.name}
+              </button>
+            ))}
+          </div>
+
+          {/* Events Grid */}
+          {currentEvents.length > 0 ? (
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={containerVariants}
+              className={`grid grid-cols-1 ${
+                activeTab === 'past' ? 'md:grid-cols-2 lg:grid-cols-3' : 'lg:grid-cols-2'
+              } gap-12`}
+            >
+              {currentEvents.map((event) => (
+                <motion.div
+                  key={event.id}
+                  variants={itemVariants}
+                  whileHover={{ y: -10, scale: 1.02 }}
+                  className="bg-white rounded-3xl overflow-hidden shadow-2xl hover:shadow-emerald-500/10 transition-all duration-500"
+                >
+                  <div className={`h-64 overflow-hidden relative ${event.type === 'past' ? 'h-48' : ''}`}>
+                    <img 
+                      src={event.image} 
+                      alt={event.title} 
+                      className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
+                    />
+                    <div className="absolute top-4 right-4">
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                        event.category === 'Tournament' ? 'bg-red-500 text-white' :
+                        event.category === 'Camp' ? 'bg-blue-500 text-white' :
+                        event.category === 'Workshop' ? 'bg-purple-500 text-white' :
+                        event.category === 'Community' ? 'bg-green-500 text-white' :
+                        'bg-gray-500 text-white'
+                      }`}>
+                        {event.category}
+                      </span>
                     </div>
-                    <p className="text-white/70 text-sm leading-relaxed">{event.description}</p>
-                    <motion.button
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => handleRegister(event)}
-                      disabled={!event.registrationOpen}
-                      className={`w-full py-3 rounded-xl font-medium transition-all duration-300 ${
-                        event.registrationOpen
-                          ? "bg-gradient-to-r from-indigo-600 to-cyan-500 text-white hover:shadow-lg"
-                          : "bg-white/10 text-white/60 cursor-not-allowed"
-                      }`}
-                    >
-                      {event.registrationOpen ? "Register Now" : "Registration Closed"}
-                    </motion.button>
+                    {event.type !== 'past' && (
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-6">
+                        <h3 className="text-2xl font-bold text-white mb-2">{event.title}</h3>
+                        <div className="flex items-center text-white/90 text-sm">
+                          <Calendar className="w-4 h-4 mr-2" />
+                          {event.date}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-8">
+                    {event.type === 'past' ? (
+                      <>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">{event.title}</h3>
+                        <div className="flex items-center text-gray-600 mb-3">
+                          <Calendar className="w-4 h-4 mr-2" />
+                          <span>{event.date}</span>
+                        </div>
+                        <p className="text-gray-600 mb-4">{event.description}</p>
+                        <div className="space-y-2">
+                          <div className="flex items-center">
+                            <Users className="w-4 h-4 text-emerald-600 mr-2" />
+                            <span className="text-sm text-gray-700">{event.participants} participants</span>
+                          </div>
+                          <div className="flex items-center">
+                            <Star className="w-4 h-4 text-amber-500 mr-2" />
+                            <span className="text-sm text-gray-700">{event.highlights}</span>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                          <div className="flex items-center">
+                            <Clock className="w-5 h-5 text-emerald-600 mr-3" />
+                            <span className="text-gray-700">{event.time}</span>
+                          </div>
+                          <div className="flex items-center">
+                            <MapPin className="w-5 h-5 text-emerald-600 mr-3" />
+                            <span className="text-gray-700 truncate">{event.location}</span>
+                          </div>
+                        </div>
+                        <p className="text-gray-600 mb-6 leading-relaxed">{event.description}</p>
+                        
+                        <div className="flex flex-wrap items-center justify-between gap-4">
+                          <div className="flex items-center space-x-4">
+                            <div className="text-sm">
+                              <span className="text-gray-600">Price:</span>
+                              <span className="font-semibold text-gray-900 ml-2">{event.price}</span>
+                            </div>
+                            {event.spotsAvailable && event.spotsAvailable > 0 && (
+                              <div className="text-sm">
+                                <span className="text-gray-600">Spots:</span>
+                                <span className="font-semibold text-emerald-600 ml-2">{event.spotsAvailable} available</span>
+                              </div>
+                            )}
+                            {event.teams && (
+                              <div className="text-sm">
+                                <span className="text-gray-600">Teams:</span>
+                                <span className="font-semibold text-gray-900 ml-2">{event.teams}</span>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {event.registrationOpen ? (
+                            <motion.button
+                              onClick={() => handleRegister(event)}
+                              className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              Register Now
+                            </motion.button>
+                          ) : (
+                            <span className="px-4 py-2 bg-gray-200 text-gray-600 rounded-xl font-medium">
+                              Registration Closed
+                            </span>
+                          )}
+                        </div>
+                      </>
+                    )}
                   </div>
                 </motion.div>
               ))}
-            </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center py-20"
+            >
+              <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Calendar className="w-12 h-12 text-gray-400" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">No Events Found</h3>
+              <p className="text-gray-600">Try selecting a different category.</p>
+            </motion.div>
           )}
         </div>
       </section>
 
-      {/* Registration Modal */}
-      <AnimatePresence>
-        {isRegisterModalOpen && selectedEvent && (
+      {/* Why Our Events */}
+      <section className="py-20 bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-            onClick={() => setIsRegisterModalOpen(false)}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-16"
           >
-            <motion.div
-              initial={{ y: 50, scale: 0.95 }}
-              animate={{ y: 0, scale: 1 }}
-              exit={{ y: 50, scale: 0.95 }}
-              onClick={(e) => e.stopPropagation()}
-              className="relative z-60 w-full max-w-2xl rounded-3xl bg-gradient-to-br from-black/60 to-black/40 border border-white/20 backdrop-blur-xl p-8 shadow-2xl"
-            >
-              <button
-                onClick={() => setIsRegisterModalOpen(false)}
-                className="absolute top-6 right-6 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/70 hover:bg-white/20"
-                aria-label="Close"
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Why Choose Our Events?
+            </h2>
+            <p className="text-xl opacity-90 max-w-2xl mx-auto">
+              Exceptional experiences that go beyond just competition
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={containerVariants}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
+          >
+            {[
+              {
+                title: "Professional Organization",
+                description: "Meticulously planned events with attention to every detail",
+                icon: Shield
+              },
+              {
+                title: "Expert Coaching",
+                description: "Learn from certified coaches and industry professionals",
+                icon: Award
+              },
+              {
+                title: "Skill Development",
+                description: "Focus on improvement and personal growth in a supportive environment",
+                icon: TrendingUp
+              },
+              {
+                title: "Community Building",
+                description: "Connect with like-minded athletes, coaches, and families",
+                icon: Users
+              }
+            ].map((benefit, index) => (
+              <motion.div
+                key={index}
+                variants={itemVariants}
+                whileHover={{ y: -10, scale: 1.05 }}
+                className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center border border-white/20 hover:border-white/40 transition-all duration-300"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-4">
+                  <benefit.icon className="w-6 h-6" />
+                </div>
+                <h3 className="text-lg font-bold mb-2">{benefit.title}</h3>
+                <p className="opacity-90 text-sm">{benefit.description}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+      <Footer/>
+      {/* Registration Modal */}
+      {showRegistrationModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 50 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="bg-white rounded-3xl max-w-2xl w-full p-8 shadow-2xl"
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-gray-900">Register for {selectedEvent?.title}</h3>
+              <button 
+                onClick={() => setShowRegistrationModal(false)}
+                className="text-gray-500 hover:text-gray-700 text-2xl"
+              >
+                ✕
               </button>
-              <div className="text-center">
-                <div className={`inline-block px-4 py-1 rounded-full text-sm font-bold bg-gradient-to-r ${selectedEvent.color} text-white mb-4`}>
-                  {CATEGORIES.find(c => c.id === selectedEvent.category)?.name}
+            </div>
+            
+            <div className="mb-6 p-4 bg-emerald-50 rounded-xl">
+              <div className="flex items-center mb-2">
+                <Calendar className="w-5 h-5 text-emerald-600 mr-2" />
+                <span className="font-medium text-emerald-800">{selectedEvent?.date}</span>
+              </div>
+              <div className="flex items-center">
+                <Clock className="w-5 h-5 text-emerald-600 mr-2" />
+                <span className="text-emerald-800">{selectedEvent?.time}</span>
+              </div>
+            </div>
+            
+            <form className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-lg font-medium text-gray-700 mb-3">Full Name</label>
+                  <input
+                    type="text"
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    placeholder="John Doe"
+                  />
                 </div>
-                <h3 className="text-2xl font-bold mb-2">{selectedEvent.title}</h3>
-                <div className="text-white/80 mb-6">
-                  <div>{formatDate(selectedEvent.date)} • {selectedEvent.time}</div>
-                  <div className="flex items-center justify-center gap-2 mt-2">
-                    <span>📍</span>
-                    <span>{selectedEvent.location}</span>
-                  </div>
-                </div>
-                <div className="bg-white/5 rounded-2xl p-6 mb-6 text-left">
-                  <h4 className="font-bold text-lg mb-2">Registration Form</h4>
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault()
-                      alert(`Thank you! You're registered for "${selectedEvent.title}". We'll contact you soon.`)
-                      setIsRegisterModalOpen(false)
-                    }}
-                    className="space-y-4"
-                  >
-                    <input
-                      type="text"
-                      placeholder="Full Name"
-                      className="w-full p-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:border-indigo-400"
-                      required
-                    />
-                    <input
-                      type="email"
-                      placeholder="Email"
-                      className="w-full p-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:border-indigo-400"
-                      required
-                    />
-                    <input
-                      type="tel"
-                      placeholder="Phone (+91 XXXX-XXXXXX)"
-                      className="w-full p-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:border-indigo-400"
-                      required
-                    />
-                    <button
-                      type="submit"
-                      className="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-500 text-white font-bold hover:shadow-lg transition-all"
-                    >
-                      Confirm Registration
-                    </button>
-                  </form>
+                <div>
+                  <label className="block text-lg font-medium text-gray-700 mb-3">Email</label>
+                  <input
+                    type="email"
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    placeholder="john@example.com"
+                  />
                 </div>
               </div>
-            </motion.div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-lg font-medium text-gray-700 mb-3">Phone</label>
+                  <input
+                    type="tel"
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    placeholder="(123) 456-7890"
+                  />
+                </div>
+                <div>
+                  <label className="block text-lg font-medium text-gray-700 mb-3">Age</label>
+                  <input
+                    type="number"
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    placeholder="16"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-lg font-medium text-gray-700 mb-3">School/Institution (if applicable)</label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  placeholder="Lincoln High School"
+                />
+              </div>
+              
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="terms"
+                  required
+                  className="w-5 h-5 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
+                />
+                <label htmlFor="terms" className="ml-3 text-gray-700">
+                  I agree to the <a href="#" className="text-emerald-600 hover:underline">terms and conditions</a>
+                </label>
+              </div>
+              
+              <motion.button
+                type="submit"
+                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-4 rounded-xl font-medium text-lg transition-all duration-300"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Complete Registration
+              </motion.button>
+            </form>
           </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Footer CTA */}
-      <footer className="py-16 px-4 border-t border-white/10">
-        <div className="max-w-4xl mx-auto text-center">
-          <h3 className="text-3xl font-bold mb-4">Don’t see what you’re looking for?</h3>
-          <p className="text-xl text-white/80 mb-8">
-            We host custom events for schools, clubs, and communities. Let’s co-create something special.
-          </p>
-          <motion.a
-            href="mailto:info@yohansports.com"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="inline-block px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-cyan-500 text-white font-bold shadow-lg hover:shadow-xl"
-          >
-            Propose an Event
-          </motion.a>
         </div>
-      </footer>
-      <Footer/>
+      )}
     </div>
-  )
+  );
 }
 
 export default EventsPage

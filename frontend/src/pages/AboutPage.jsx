@@ -1,294 +1,518 @@
-"use client"
-import { useState, useEffect, useCallback } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import Footer from "../components/Footer"
-import Navbar from "../components/Navbar"
-// Reuse your existing data
-const STATS = [
-  { number: 50, label: "Schools Partnered", suffix: "+" },
-  { number: 2000, label: "Students Trained", suffix: "+" },
-  { number: 15, label: "National Champions", suffix: "+" },
-  { number: 8, label: "Locations Nationwide", suffix: "" },
-]
+'use client';
 
-const CORE_VALUES = [
-  {
-    title: "Holistic Development",
-    desc: "We believe sports build character, discipline, and leadership — not just physical skill.",
-    icon: "🧠",
-  },
-  {
-    title: "Inclusive Excellence",
-    desc: "World-class training made accessible to every child, regardless of background.",
-    icon: "🤝",
-  },
-  {
-    title: "Science-Backed Coaching",
-    desc: "Programs designed with sports science, analytics, and certified international curricula.",
-    icon: "🔬",
-  },
-  {
-    title: "Community First",
-    desc: "We partner with schools, parents, and local communities to create lasting impact.",
-    icon: "🏘️",
-  },
-]
+import { useState, useEffect, useRef } from 'react';
+import { motion, useAnimation, useInView, useScroll, useTransform } from 'framer-motion';
+import { Users, GraduationCap, Award, Trophy, Target, Shield, Heart, TrendingUp, CheckCircle } from 'lucide-react';
+import Footer from '../components/Footer';
+import Navbar from '../components/Navbar';
 
-const TEAM_HIGHLIGHTS = [
+// Mock data
+const stats = [
+  { number: 150, label: "Schools Partnered", icon: GraduationCap, suffix: "+" },
+  { number: 8500, label: "Students Trained", icon: Users, suffix: "+" },
+  { number: 42, label: "National Champions", icon: Trophy, suffix: "+" },
+  { number: 12, label: "Years Experience", icon: Award, suffix: "+" }
+];
+
+const timeline = [
   {
-    name: "Amit Sharma",
-    role: "Head Cricket Coach",
-    bio: "Former Ranji Trophy player with 10+ years coaching youth to national championships.",
-    image: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?auto=format&fit=crop&w=200",
+    year: "2011",
+    title: "Foundation",
+    description: "SportEdu founded with mission to revolutionize sports education"
   },
   {
-    name: "Neha Patil",
-    role: "Football Coach",
-    bio: "Ex-Indian Women's National Team player focused on grassroots development.",
-    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=200",
+    year: "2015",
+    title: "First Championship",
+    description: "First national championship win with partner school"
   },
   {
-    name: "Priya Desai",
-    role: "PE Curriculum Lead",
-    bio: "Designed curriculum for 50+ schools aligned to CBSE & ICSE standards.",
-    image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=200",
+    year: "2018",
+    title: "Expansion",
+    description: "Expanded to 50+ schools across the region"
   },
-]
+  {
+    year: "2023",
+    title: "Milestone",
+    description: "8500+ students trained, 42 national champions"
+  }
+];
+
+const team = [
+  {
+    id: 1,
+    name: "Dr. Rajesh Kumar",
+    role: "Founder & CEO",
+    qualifications: "PhD Sports Science, Former National Coach",
+    image: "https://placehold.co/400x400/059669/white?text=RK"
+  },
+  {
+    id: 2,
+    name: "Priya Sharma",
+    role: "Director of Operations",
+    qualifications: "MBA, Sports Management Expert",
+    image: "https://placehold.co/400x400/dc2626/white?text=PS"
+  },
+  {
+    id: 3,
+    name: "Vikram Singh",
+    role: "Head of Coaching",
+    qualifications: "International Level Coach, Sports Psychology",
+    image: "https://placehold.co/400x400/7c3aed/white?text=VS"
+  },
+  {
+    id: 4,
+    name: "Ananya Patel",
+    role: "Academy Director",
+    qualifications: "Former Olympian, Certified Trainer",
+    image: "https://placehold.co/400x400/0891b2/white?text=AP"
+  }
+];
+
+const values = [
+  {
+    title: "Excellence",
+    description: "We strive for the highest standards in coaching and athlete development.",
+    icon: Award
+  },
+  {
+    title: "Integrity",
+    description: "Honesty and transparency in all our interactions and operations.",
+    icon: Shield
+  },
+  {
+    title: "Innovation",
+    description: "Continuously evolving our methods with the latest sports science.",
+    icon: TrendingUp
+  },
+  {
+    title: "Community",
+    description: "Building strong relationships with schools, families, and athletes.",
+    icon: Users
+  }
+];
 
 export default function AboutUsPage() {
-    const [clickedItem, setClickedItem] = useState(null);
-    const handleProgramClick = useCallback((program) => {
-        setClickedItem(program)
-      }, [])
-  return (
-    <div className="bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white min-h-screen antialiased">
-      {/* Hero Section */}
-      <Navbar onProgramSelect={handleProgramClick} />
-      <section className="pt-32 pb-20 px-4">
-        <div className="max-w-7xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-            className="inline-block px-4 py-2 bg-gradient-to-r from-blue-600/20 to-indigo-500/20 rounded-full border border-white/20 text-blue-300 text-sm font-medium mb-6"
-          >
-            👋 Our Story
-          </motion.div>
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.1 }}
-            className="text-4xl md:text-5xl lg:text-6xl font-bold max-w-4xl mx-auto leading-tight"
-          >
-            <span className="block bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
-              Building Champions
-            </span>
-            <span className="block bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent mt-4">
-              On and Off the Field
-            </span>
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.2 }}
-            className="text-xl text-white/80 max-w-3xl mx-auto mt-8 leading-relaxed"
-          >
-            Since 2015, Yohan Sports has been redefining sports education in India — blending passion, science, and purpose to nurture the next generation of athletes and leaders.
-          </motion.p>
-        </div>
-      </section>
+    const [isScrolled, setIsScrolled] = useState(false);
+  const statsRef = useRef(null);
 
-      {/* Stats Section */}
-      <section className="py-8 bg-black/20 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {STATS.map((stat, index) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="text-center p-4"
-              >
-                <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white to-white/90 bg-clip-text text-transparent">
-                  {stat.number}
-                  {stat.suffix}
-                </div>
-                <div className="mt-2 text-sm md:text-base text-white/70">{stat.label}</div>
-              </motion.div>
-            ))}
+  // Stats counter animation
+  const statsControls = useAnimation();
+  const statsRefInView = useInView(statsRef, { once: true, margin: "-100px" });
+  
+  useEffect(() => {
+    if (statsRefInView) {
+      statsControls.start({
+        opacity: 1,
+        y: 0,
+        transition: { duration: 0.6 }
+      });
+    }
+  }, [statsControls, statsRefInView]);
+
+  // Custom hook for number counter animation
+  const useCounter = (end, duration = 2000) => {
+    const [count, setCount] = useState(0);
+    
+    useEffect(() => {
+      let start = 0;
+      const increment = end / (duration / 16);
+      
+      const timer = setInterval(() => {
+        start += increment;
+        if (start >= end) {
+          setCount(end);
+          clearInterval(timer);
+        } else {
+          setCount(Math.ceil(start));
+        }
+      }, 16);
+      
+      return () => clearInterval(timer);
+    }, [end, duration]);
+    
+    return count;
+  };
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut"
+      }
+    }
+  };
+
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 60 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+  };
+
+  const slideInLeft = {
+    hidden: { opacity: 0, x: -100 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: "easeOut" } }
+  };
+
+  const slideInRight = {
+    hidden: { opacity: 0, x: 100 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: "easeOut" } }
+  };
+
+  return (
+    <div className="bg-white">
+      <Navbar/>
+      {/* Hero Section */}
+      <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden bg-gradient-to-br from-emerald-50 to-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="max-w-4xl mx-auto text-center">
+            <motion.h1 
+              className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              Our <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Story</span>
+            </motion.h1>
+            <motion.p 
+              className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+            >
+              Since 2011, we've been transforming lives through sports education, 
+              creating champions both on and off the field.
+            </motion.p>
           </div>
         </div>
       </section>
 
-      {/* Mission & Vision */}
-      <section className="py-20 px-4">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+      {/* Stats Section */}
+      <section ref={statsRef} className="py-24 bg-gradient-to-br from-gray-50 via-white to-gray-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-20"
           >
-            <img
-              src="https://images.unsplash.com/photo-1549060279-7e16338922a7?auto=format&fit=crop&w=600"
-              alt="Young athletes training"
-              className="rounded-3xl shadow-2xl border border-white/10"
-            />
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7, delay: 0.2 }}
-            className="space-y-8"
-          >
-            <div>
-              <h2 className="text-3xl font-bold mb-4">Our Mission</h2>
-              <p className="text-lg text-white/80 leading-relaxed">
-                To empower every child through sports by providing world-class coaching, holistic development, and equitable access — because every child deserves to play, grow, and shine.
-              </p>
-            </div>
-            <div>
-              <h2 className="text-3xl font-bold mb-4">Our Vision</h2>
-              <p className="text-lg text-white/80 leading-relaxed">
-                A world where sports are a fundamental part of education — building healthier, happier, and more resilient communities across India.
-              </p>
-            </div>
-            <motion.a
-              href="/contact"
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.98 }}
-              className="inline-block px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-500 text-white font-medium shadow-lg hover:shadow-xl transition-all"
+            <motion.h2 
+              className="text-4xl md:text-5xl font-bold text-gray-900 mb-6"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, delay: 0.2 }}
             >
-              Partner With Us
-            </motion.a>
+              Our Impact in Numbers
+            </motion.h2>
+            <motion.p 
+              className="text-xl text-gray-600 max-w-3xl mx-auto"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+            >
+              Years of excellence in sports education and athlete development
+            </motion.p>
+          </motion.div>
+
+          <motion.div
+            ref={statsRef}
+            initial={{ opacity: 0, y: 30 }}
+            animate={statsControls}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
+          >
+            {stats.map((stat, index) => {
+              const count = useCounter(stat.number);
+              return (
+                <motion.div
+                  key={index}
+                  className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-gray-100 hover:shadow-2xl transition-all duration-500"
+                  whileHover={{ y: -15, scale: 1.03 }}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                >
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mx-auto mb-8 shadow-lg">
+                    <stat.icon className="text-white w-8 h-8" />
+                  </div>
+                  <motion.div 
+                    className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-3"
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 1, delay: index * 0.2 }}
+                  >
+                    {count}{stat.suffix}
+                  </motion.div>
+                  <p className="text-gray-700 font-semibold text-lg">{stat.label}</p>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Mission & Vision */}
+      <section className="py-28 bg-gradient-to-b from-white to-gray-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={slideInLeft}
+            >
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-8 leading-tight">
+                Our <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Mission</span>
+              </h2>
+              <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+                To revolutionize sports education by providing world-class training programs 
+                that develop not just athletes, but well-rounded individuals with strong 
+                character, discipline, and leadership skills.
+              </p>
+              <p className="text-lg text-gray-600 mb-10 leading-relaxed">
+                We believe that sports have the power to transform lives, build communities, 
+                and create opportunities that extend far beyond the playing field.
+              </p>
+              
+              <div className="space-y-6">
+                <div className="flex items-start">
+                  <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center mr-4 mt-1">
+                    <CheckCircle className="text-emerald-600 w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-900 mb-1">Holistic Development</h4>
+                    <p className="text-gray-600">Focus on physical, mental, and character development</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center mr-4 mt-1">
+                    <CheckCircle className="text-emerald-600 w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-900 mb-1">Accessible Excellence</h4>
+                    <p className="text-gray-600">World-class training made accessible to all</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center mr-4 mt-1">
+                    <CheckCircle className="text-emerald-600 w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-900 mb-1">Community Impact</h4>
+                    <p className="text-gray-600">Building stronger communities through sports</p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+            
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={slideInRight}
+              className="relative"
+            >
+              <div className="bg-gray-200 border-2 border-dashed rounded-2xl w-full h-96" />
+            </motion.div>
+          </div>
+          
+          {/* Vision */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8 }}
+            className="mt-24 text-center"
+          >
+            <h3 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8">
+              Our <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Vision</span>
+            </h3>
+            <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
+              To be the most trusted and impactful sports education provider in the country, 
+              recognized for developing champions who excel in their sport and make positive 
+              contributions to society.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Timeline */}
+      <section className="py-28 bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-20"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">Our Journey</h2>
+            <p className="text-xl opacity-90 max-w-3xl mx-auto">
+              From humble beginnings to becoming a leader in sports education
+            </p>
+          </motion.div>
+          
+          <div className="relative max-w-4xl mx-auto">
+            <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-white/30"></div>
+            <div className="space-y-16">
+              {timeline.map((item, index) => (
+                <motion.div
+                  key={index}
+                  className="flex items-center"
+                  initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 0.6, delay: index * 0.2 }}
+                >
+                  <div className={`w-1/2 pr-12 ${index % 2 === 0 ? '' : 'order-2 pr-0 pl-12 text-right'}`}>
+                    <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+                      <h4 className="text-xl font-bold mb-2">{item.title}</h4>
+                      <p className="opacity-90">{item.description}</p>
+                    </div>
+                  </div>
+                  <div className="w-1/2 flex justify-center z-10">
+                    <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-emerald-600 font-bold text-lg shadow-lg">
+                      {item.year}
+                    </div>
+                  </div>
+                  <div className={`w-1/2 ${index % 2 === 0 ? 'order-2 pl-12' : 'pr-12'}`}>
+                    {/* Empty div for spacing */}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Leadership Team */}
+      <section className="py-28 bg-gradient-to-b from-gray-50 to-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={containerVariants}
+            className="text-center mb-20"
+          >
+            <motion.h2 
+              variants={itemVariants}
+              className="text-4xl md:text-5xl font-bold text-gray-900 mb-6"
+            >
+              Meet Our Leadership Team
+            </motion.h2>
+            <motion.p 
+              variants={itemVariants}
+              className="text-xl text-gray-600 max-w-3xl mx-auto"
+            >
+              Experienced professionals dedicated to excellence in sports education
+            </motion.p>
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={containerVariants}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
+          >
+            {team.map((member, index) => (
+              <motion.div
+                key={member.id}
+                variants={itemVariants}
+                whileHover={{ y: -15, scale: 1.03 }}
+                className="bg-white rounded-3xl overflow-hidden shadow-2xl hover:shadow-emerald-500/10 transition-all duration-500 group"
+              >
+                <div className="h-80 bg-gray-200 relative overflow-hidden">
+                  <img 
+                    src={member.image} 
+                    alt={member.name} 
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  <motion.div 
+                    className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6"
+                    whileHover={{ opacity: 1 }}
+                  >
+                    <div className="text-white">
+                      <p className="font-bold text-xl mb-1">{member.name}</p>
+                      <p className="text-sm opacity-90">{member.role}</p>
+                    </div>
+                  </motion.div>
+                </div>
+                <div className="p-6">
+                  <p className="text-gray-600 text-sm">{member.qualifications}</p>
+                </div>
+              </motion.div>
+            ))}
           </motion.div>
         </div>
       </section>
 
       {/* Core Values */}
-      <section className="py-20 px-4 bg-black/10">
-        <div className="max-w-7xl mx-auto">
+      <section className="py-28 bg-gradient-to-br from-white to-gray-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={containerVariants}
+            className="text-center mb-20"
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Our Core Values</h2>
-            <p className="text-xl text-white/70 max-w-3xl mx-auto">
-              These principles guide everything we do — from coaching to community engagement.
-            </p>
+            <motion.h2 
+              variants={itemVariants}
+              className="text-4xl md:text-5xl font-bold text-gray-900 mb-6"
+            >
+              Our Core Values
+            </motion.h2>
+            <motion.p 
+              variants={itemVariants}
+              className="text-xl text-gray-600 max-w-3xl mx-auto"
+            >
+              The principles that guide everything we do
+            </motion.p>
           </motion.div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {CORE_VALUES.map((value, index) => (
+
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={containerVariants}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
+          >
+            {values.map((value, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-gradient-to-br from-black/40 to-black/20 p-6 rounded-3xl border border-white/10 backdrop-blur-sm hover:border-white/30 transition-all"
+                variants={itemVariants}
+                whileHover={{ y: -10, scale: 1.02 }}
+                className="bg-white p-8 rounded-3xl shadow-lg border border-gray-100 hover:border-emerald-200 transition-all duration-500 text-center"
               >
-                <div className="text-4xl mb-4">{value.icon}</div>
-                <h3 className="text-xl font-bold mb-2">{value.title}</h3>
-                <p className="text-white/70 text-sm leading-relaxed">{value.desc}</p>
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mx-auto mb-6">
+                  <value.icon className="text-white w-8 h-8" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">{value.title}</h3>
+                <p className="text-gray-600">{value.description}</p>
               </motion.div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Team Highlights */}
-      <section className="py-20 px-4">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Meet Our Leadership</h2>
-            <p className="text-xl text-white/70 max-w-3xl mx-auto">
-              Certified, passionate, and proven — our coaches and educators are the heart of Yohan Sports.
-            </p>
           </motion.div>
-          <div className="grid md:grid-cols-3 gap-8">
-            {TEAM_HIGHLIGHTS.map((member, index) => (
-              <motion.div
-                key={member.name}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="group"
-              >
-                <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-black/40 to-black/20 border border-white/10 backdrop-blur-sm">
-                  <img
-                    src={member.image}
-                    alt={member.name}
-                    className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-                  <div className="absolute bottom-4 left-4 text-white">
-                    <div className="font-bold text-lg">{member.name}</div>
-                    <div className="text-indigo-300 text-sm">{member.role}</div>
-                  </div>
-                </div>
-                <div className="mt-4 text-white/80 text-sm leading-relaxed">
-                  {member.bio}
-                </div>
-              </motion.div>
-            ))}
-          </div>
         </div>
       </section>
-
-      {/* CTA Section */}
-      <section className="py-20 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <motion.h2
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-3xl md:text-4xl font-bold mb-6"
-          >
-            Join Our Movement
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="text-xl text-white/80 mb-10 max-w-2xl mx-auto"
-          >
-            Whether you're a school, parent, coach, or partner — you can help us build a world that plays.
-          </motion.p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <motion.a
-              href="/programs"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-cyan-500 text-white font-bold shadow-lg hover:shadow-xl transition-all"
-            >
-              Explore Programs
-            </motion.a>
-            <motion.a
-              href="/contact"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-8 py-4 rounded-2xl bg-white/10 text-white font-bold backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-all"
-            >
-              Get in Touch
-            </motion.a>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer (minimal) */}
       <Footer/>
     </div>
-  )
+  );
 }

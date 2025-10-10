@@ -1,5 +1,7 @@
 import React from "react";
 import { motion } from 'framer-motion';
+import { Award, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Youtube, Linkedin} from 'lucide-react';
+
 function Footer() {
     return (
         <footer className="bg-gradient-to-r from-gray-900 to-black text-white py-20 relative overflow-hidden">
