@@ -3,17 +3,18 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, useAnimation, useInView, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import Lenis from '@studio-freight/lenis';
-import { ChevronDown, Calendar, Users, GraduationCap, Award, Star, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Youtube, Linkedin, Trophy, Target, Shield, Heart, Play, CheckCircle, Clock, TrendingUp } from 'lucide-react';
+import { ChevronDown, Send, AlertCircle, Calendar, Users, GraduationCap, Award, Star, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Youtube, Linkedin, Trophy, Target, Shield, Heart, Play, CheckCircle, Clock, TrendingUp } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import useStore from '../stores';
 
 // Mock data
-const programs = [
+const MOCK_PROGRAMS = [
   {
     id: 1,
     title: "Cricket Academy",
     description: "Professional cricket training with certified coaches and state-of-the-art facilities.",
-    benefits: ["Batting & Bowling", "Fielding Drills", "Match Strategy", "Physical Conditioning"],
+    features: ["Batting & Bowling", "Fielding Drills", "Match Strategy", "Physical Conditioning"],
     duration: "Weekly/Monthly packages",
     image: "https://placehold.co/600x400/059669/white?text=Cricket",
     color: "from-emerald-500 to-teal-600"
@@ -22,7 +23,7 @@ const programs = [
     id: 2,
     title: "Football Training",
     description: "Comprehensive football program focusing on skills, tactics, and team play.",
-    benefits: ["Dribbling & Passing", "Shooting Accuracy", "Defensive Tactics", "Game Intelligence"],
+    features: ["Dribbling & Passing", "Shooting Accuracy", "Defensive Tactics", "Game Intelligence"],
     duration: "Term-based programs",
     image: "https://placehold.co/600x400/dc2626/white?text=Football",
     color: "from-red-500 to-orange-600"
@@ -31,7 +32,7 @@ const programs = [
     id: 3,
     title: "Basketball Development",
     description: "Elite basketball training for all skill levels with professional coaching.",
-    benefits: ["Ball Handling", "Shooting Form", "Defensive Stance", "Team Coordination"],
+    features: ["Ball Handling", "Shooting Form", "Defensive Stance", "Team Coordination"],
     duration: "Flexible scheduling",
     image: "https://placehold.co/600x400/7c3aed/white?text=Basketball",
     color: "from-purple-500 to-indigo-600"
@@ -40,14 +41,14 @@ const programs = [
     id: 4,
     title: "Swimming Excellence",
     description: "Professional swimming instruction for beginners to competitive athletes.",
-    benefits: ["Stroke Technique", "Breathing Control", "Race Strategy", "Water Safety"],
+    features: ["Stroke Technique", "Breathing Control", "Race Strategy", "Water Safety"],
     duration: "Session-based training",
     image: "https://placehold.co/600x400/0891b2/white?text=Swimming",
     color: "from-sky-500 to-cyan-600"
   }
 ];
 
-const coaches = [
+const MOCK_COACHES = [
   {
     id: 1,
     name: "Alex Johnson",
@@ -178,18 +179,39 @@ const timeline = [
     description: "8500+ students trained, 42 national champions"
   }
 ];
+const normalizeArray = (obj) => {
+  if (!obj) return [];
+  // if array already
+  if (Array.isArray(obj)) return obj;
+  // common store shapes: { list: [...] } or { data: [...] } or nested wrappers
+  if (obj.list && Array.isArray(obj.list)) return obj.list;
+  if (obj.data && Array.isArray(obj.data)) return obj.data;
+  // sometimes API returns { list: { data: [...] } }
+  if (obj.list && obj.list.data && Array.isArray(obj.list.data)) return obj.list.data;
+  if (obj.data && obj.data.data && Array.isArray(obj.data.data)) return obj.data.data;
+  return [];
+};
 
 export default function SportsLandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('explore');
   const [isScrolled, setIsScrolled] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [selectedProgram, setSelectedProgram] = useState(null);
+  const [loadingPrograms, setLoadingPrograms] = useState(false);
+  const [loadingCoaches, setLoadingCoaches] = useState(false);
+  const [showEnrollmentModal, setShowEnrollmentModal] = useState(false);
+  const [formStatus, setFormStatus] = useState('idle');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
-    type: 'individual',
-    message: ''
+    subject: '',
+    type: 'General',
+    program: '',
+    event: '',
+    message: '',
+    privacy: false
   });
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
@@ -203,7 +225,7 @@ export default function SportsLandingPage() {
   const successRef = useRef(null);
   const impactRef = useRef(null);
   const contactRef = useRef(null);
-
+  const { programs, fetchPrograms, coaches, fetchCoaches, createEnquiry } = useStore();
   // Auto-rotate testimonials
   useEffect(() => {
     const interval = setInterval(() => {
@@ -212,6 +234,51 @@ export default function SportsLandingPage() {
     return () => clearInterval(interval);
   }, []);
 
+  const handleEnroll = (program) => {
+    setSelectedProgram(program);
+    setFormData(prev => ({ ...prev, program: program.name }));
+    setShowEnrollmentModal(true);
+  };
+
+
+  useEffect(() => {
+    // defensive checks
+    try {
+      const programsList = normalizeArray(programs);
+      if (programsList.length === 0 && typeof fetchPrograms === 'function') {
+        setLoadingPrograms(true);
+        // call fetch and clear local loading when done
+        fetchPrograms().finally(() => setLoadingPrograms(false));
+      }
+    } catch (err) {
+      // swallow — keep UI functional
+      setLoadingPrograms(false);
+      // console.warn('fetchPrograms failed', err);
+    }
+
+    try {
+      const coachesList = normalizeArray(coaches);
+      if (coachesList.length === 0 && typeof fetchCoaches === 'function') {
+        setLoadingCoaches(true);
+        fetchCoaches().finally(() => setLoadingCoaches(false));
+      }
+    } catch (err) {
+      setLoadingCoaches(false);
+      // console.warn('fetchCoaches failed', err);
+    }
+
+    // run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const programsArray = (() => {
+    const arr = normalizeArray(programs);
+    return arr.length > 0 ? arr : MOCK_PROGRAMS;
+  })();
+
+  const coachesArray = (() => {
+    const arr = normalizeArray(coaches);
+    return arr.length > 0 ? arr : MOCK_COACHES;
+  })();
   // Initialize Lenis for smooth scrolling
   useEffect(() => {
     const lenis = new Lenis({
@@ -275,14 +342,54 @@ export default function SportsLandingPage() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+
+  const resetFormData = () => {
+    setFormData({
+      name: '',
+      email: '',
+      phone: '',
+      subject: '',
+      type: 'General',
+      program: '',
+      event: '',
+      message: '',
+      privacy: false,
+    });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    setFormSubmitted(true);
-    setTimeout(() => {
-      setFormSubmitted(false);
-      setShowModal(false);
-    }, 3000);
+    setFormStatus('submitting');
+
+    try {
+      const payload = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        type: formData.type,
+        sport: formData.sport,
+        programId: selectedProgram?._id || selectedProgram?.id || null,
+        subject: formData.subject ? formData.subject.toLowerCase() : "Enquiry",
+        message: formData.message ? formData.message : "No message provided",
+      };
+
+      // createEnquiry returns { ok: true/false, data or error } per your slice
+      const resp = await createEnquiry(payload);
+      if (resp && resp.ok) {
+        setFormStatus('success');
+        resetFormData();
+      } else {
+        setFormStatus('error');
+      }
+    } catch (err) {
+      console.error('createEnquiry error', err);
+      setFormStatus('error');
+    } finally {
+      // auto-reset success message after a short delay
+      setTimeout(() => {
+        setFormStatus('idle');
+      }, 4000);
+    }
   };
 
   const scrollToSection = (sectionId, ref) => {
@@ -292,15 +399,15 @@ export default function SportsLandingPage() {
 
   // Scroll animations
   const { scrollYProgress } = useScroll();
-  
+
   // Parallax effect for hero background
   const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '50%']);
   const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.1]);
-  
+
   // Stats counter animation
   const statsControls = useAnimation();
   const statsRefInView = useInView(statsRef, { once: true, margin: "-100px" });
-  
+
   useEffect(() => {
     if (statsRefInView) {
       statsControls.start({
@@ -314,11 +421,11 @@ export default function SportsLandingPage() {
   // Custom hook for number counter animation
   const useCounter = (end, duration = 2000) => {
     const [count, setCount] = useState(0);
-    
+
     useEffect(() => {
       let start = 0;
       const increment = end / (duration / 16); // 60fps
-      
+
       const timer = setInterval(() => {
         start += increment;
         if (start >= end) {
@@ -328,10 +435,10 @@ export default function SportsLandingPage() {
           setCount(Math.ceil(start));
         }
       }, 16);
-      
+
       return () => clearInterval(timer);
     }, [end, duration]);
-    
+
     return count;
   };
 
@@ -389,66 +496,66 @@ export default function SportsLandingPage() {
       {/* Animated Background Elements */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         {/* Floating spheres */}
-        <motion.div 
+        <motion.div
           className="absolute top-20 left-10 w-32 h-32 rounded-full bg-emerald-500/10 blur-xl"
-          animate={{ 
+          animate={{
             y: [0, -30, 0],
             x: [0, 40, 0],
             scale: [1, 1.2, 1]
           }}
-          transition={{ 
+          transition={{
             duration: 12,
             repeat: Infinity,
             ease: "easeInOut"
           }}
         />
-        <motion.div 
+        <motion.div
           className="absolute bottom-20 right-10 w-24 h-24 rounded-full bg-orange-500/10 blur-xl"
-          animate={{ 
+          animate={{
             y: [0, 30, 0],
             x: [0, -30, 0],
             scale: [1, 0.8, 1]
           }}
-          transition={{ 
+          transition={{
             duration: 8,
             repeat: Infinity,
             ease: "easeInOut",
             delay: 2
           }}
         />
-        <motion.div 
+        <motion.div
           className="absolute top-1/2 left-1/4 w-16 h-16 rounded-full bg-purple-500/10 blur-xl"
-          animate={{ 
+          animate={{
             rotate: [0, 360],
             scale: [1, 1.3, 1]
           }}
-          transition={{ 
+          transition={{
             duration: 15,
             repeat: Infinity,
             ease: "linear"
           }}
         />
-        
+
         {/* Animated gradient orbs */}
-        <motion.div 
+        <motion.div
           className="absolute top-1/3 right-1/4 w-48 h-48 rounded-full bg-gradient-to-r from-emerald-400/20 to-teal-400/20 blur-3xl"
-          animate={{ 
+          animate={{
             scale: [1, 1.5, 1],
             opacity: [0.3, 0.6, 0.3]
           }}
-          transition={{ 
+          transition={{
             duration: 6,
             repeat: Infinity,
             ease: "easeInOut"
           }}
         />
-        <motion.div 
+        <motion.div
           className="absolute bottom-1/3 left-1/3 w-36 h-36 rounded-full bg-gradient-to-r from-purple-400/20 to-pink-400/20 blur-3xl"
-          animate={{ 
+          animate={{
             scale: [1, 1.3, 1],
             opacity: [0.4, 0.7, 0.4]
           }}
-          transition={{ 
+          transition={{
             duration: 8,
             repeat: Infinity,
             ease: "easeInOut",
@@ -458,11 +565,11 @@ export default function SportsLandingPage() {
       </div>
 
       {/* Header */}
-      <Navbar/>
+      <Navbar />
 
       {/* Explore Section */}
       <section ref={exploreRef} className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden min-h-screen flex items-center">
-        <motion.div 
+        <motion.div
           className="absolute inset-0 z-0"
           style={{ y: heroY, scale: heroScale }}
         >
@@ -470,7 +577,7 @@ export default function SportsLandingPage() {
           <div className="absolute bottom-0 left-0 w-2/3 h-full bg-gradient-to-r from-emerald-500/10 to-transparent"></div>
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-gradient-to-r from-emerald-400/20 to-teal-400/20 blur-3xl"></div>
         </motion.div>
-        
+
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -478,7 +585,7 @@ export default function SportsLandingPage() {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="max-w-4xl mx-auto text-center"
           >
-            <motion.h1 
+            <motion.h1
               className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -486,13 +593,13 @@ export default function SportsLandingPage() {
             >
               Where Champions Are <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Made</span>
             </motion.h1>
-            <motion.p 
+            <motion.p
               className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
             >
-              Transform your athletic potential with professional training programs 
+              Transform your athletic potential with professional training programs
               designed for schools, colleges, and individuals. Join 8500+ athletes who've achieved greatness.
             </motion.p>
             <motion.div
@@ -527,23 +634,23 @@ export default function SportsLandingPage() {
             className="mt-20 flex justify-center"
           >
             <div className="relative">
-              <motion.div 
+              <motion.div
                 className="w-72 h-72 md:w-96 md:h-96 rounded-full bg-gradient-to-br from-emerald-500/20 to-teal-600/20 flex items-center justify-center backdrop-blur-sm border border-emerald-500/30"
-                animate={{ 
+                animate={{
                   rotate: [0, 360],
                 }}
-                transition={{ 
+                transition={{
                   duration: 25,
                   repeat: Infinity,
                   ease: "linear"
                 }}
               >
-                <motion.div 
+                <motion.div
                   className="w-60 h-60 md:w-80 md:h-80 rounded-full bg-gradient-to-br from-emerald-500/30 to-teal-600/30 flex items-center justify-center backdrop-blur-sm border border-emerald-500/40"
-                  animate={{ 
+                  animate={{
                     scale: [1, 1.1, 1],
                   }}
-                  transition={{ 
+                  transition={{
                     duration: 4,
                     repeat: Infinity,
                     ease: "easeInOut"
@@ -554,15 +661,15 @@ export default function SportsLandingPage() {
                   </div>
                 </motion.div>
               </motion.div>
-              
+
               {/* Floating stats */}
-              <motion.div 
+              <motion.div
                 className="absolute -top-6 -right-6 bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg"
                 {...floatAnimation}
               >
                 42+ Champions
               </motion.div>
-              <motion.div 
+              <motion.div
                 className="absolute -bottom-6 -left-6 bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg"
                 {...floatAnimation}
                 transition={{ ...floatAnimation.animate.transition, delay: 1 }}
@@ -575,10 +682,10 @@ export default function SportsLandingPage() {
 
         <motion.div
           className="absolute bottom-12 left-1/2 transform -translate-x-1/2"
-          animate={{ 
+          animate={{
             y: [0, 15, 0],
           }}
-          transition={{ 
+          transition={{
             duration: 2.5,
             repeat: Infinity,
             ease: "easeInOut"
@@ -599,7 +706,7 @@ export default function SportsLandingPage() {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="text-center mb-20"
           >
-            <motion.h2 
+            <motion.h2
               className="text-4xl md:text-5xl font-bold text-gray-900 mb-6"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -608,7 +715,7 @@ export default function SportsLandingPage() {
             >
               Our Impact in Numbers
             </motion.h2>
-            <motion.p 
+            <motion.p
               className="text-xl text-gray-600 max-w-3xl mx-auto"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -640,7 +747,7 @@ export default function SportsLandingPage() {
                   <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mx-auto mb-8 shadow-lg">
                     <stat.icon className="text-white w-8 h-8" />
                   </div>
-                  <motion.div 
+                  <motion.div
                     className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-3"
                     initial={{ opacity: 0, scale: 0.5 }}
                     whileInView={{ opacity: 1, scale: 1 }}
@@ -670,7 +777,7 @@ export default function SportsLandingPage() {
               className="relative"
             >
               <div className="grid grid-cols-2 gap-6">
-                <motion.div 
+                <motion.div
                   className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl p-6 text-white shadow-2xl"
                   whileHover={{ scale: 1.05 }}
                   transition={{ duration: 0.3 }}
@@ -679,7 +786,7 @@ export default function SportsLandingPage() {
                   <h3 className="text-2xl font-bold mb-2">42+</h3>
                   <p className="opacity-90">National Champions</p>
                 </motion.div>
-                <motion.div 
+                <motion.div
                   className="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-3xl p-6 text-white shadow-2xl"
                   whileHover={{ scale: 1.05 }}
                   transition={{ duration: 0.3 }}
@@ -688,7 +795,7 @@ export default function SportsLandingPage() {
                   <h3 className="text-2xl font-bold mb-2">8500+</h3>
                   <p className="opacity-90">Students Trained</p>
                 </motion.div>
-                <motion.div 
+                <motion.div
                   className="bg-gradient-to-br from-orange-500 to-red-600 rounded-3xl p-6 text-white shadow-2xl col-span-2"
                   whileHover={{ scale: 1.05 }}
                   transition={{ duration: 0.3 }}
@@ -698,21 +805,21 @@ export default function SportsLandingPage() {
                   <p className="opacity-90">Educational Institutions</p>
                 </motion.div>
               </div>
-              
-              <motion.div 
+
+              <motion.div
                 className="absolute -top-8 -right-8 w-32 h-32 bg-gradient-to-r from-emerald-400/30 to-teal-400/30 rounded-full blur-2xl"
-                animate={{ 
+                animate={{
                   scale: [1, 1.5, 1],
                   opacity: [0.3, 0.6, 0.3]
                 }}
-                transition={{ 
+                transition={{
                   duration: 6,
                   repeat: Infinity,
                   ease: "easeInOut"
                 }}
               />
             </motion.div>
-            
+
             <motion.div
               initial="hidden"
               whileInView="visible"
@@ -723,16 +830,16 @@ export default function SportsLandingPage() {
                 About <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Yohan Sports</span>
               </h2>
               <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-                Founded in 2011, Yohan Sports has been at the forefront of sports education, 
-                partnering with over 150 educational institutions to deliver world-class 
+                Founded in 2011, Yohan Sports has been at the forefront of sports education,
+                partnering with over 150 educational institutions to deliver world-class
                 training programs that create champions both on and off the field.
               </p>
               <p className="text-lg text-gray-600 mb-10 leading-relaxed">
-                Our mission is to nurture athletic talent, promote healthy lifestyles, 
-                and develop well-rounded individuals through structured, professional 
+                Our mission is to nurture athletic talent, promote healthy lifestyles,
+                and develop well-rounded individuals through structured, professional
                 training methodologies backed by science and proven results.
               </p>
-              
+
               <div className="space-y-6">
                 <div className="flex items-start">
                   <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center mr-4 mt-1">
@@ -764,7 +871,7 @@ export default function SportsLandingPage() {
               </div>
             </motion.div>
           </div>
-          
+
           {/* Timeline */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -811,13 +918,13 @@ export default function SportsLandingPage() {
             variants={containerVariants}
             className="text-center mb-20"
           >
-            <motion.h2 
+            <motion.h2
               variants={itemVariants}
               className="text-4xl md:text-5xl font-bold text-gray-900 mb-6"
             >
               Our Training Programs
             </motion.h2>
-            <motion.p 
+            <motion.p
               variants={itemVariants}
               className="text-xl text-gray-600 max-w-3xl mx-auto"
             >
@@ -832,18 +939,19 @@ export default function SportsLandingPage() {
             variants={containerVariants}
             className="grid grid-cols-1 md:grid-cols-2 gap-12"
           >
-            {programs.map((program, index) => (
+            {programsArray.map((program, index) => (
               <motion.div
-                key={program.id}
+                key={program._id || program.id || `${program.name || 'prog'}-${idx}`}
                 variants={itemVariants}
                 whileHover={{ y: -15, scale: 1.02 }}
                 className="group relative bg-white rounded-3xl overflow-hidden shadow-2xl hover:shadow-emerald-500/10 transition-all duration-500"
               >
                 <div className="h-80 overflow-hidden relative">
-                  <img 
-                    src={program.image} 
-                    alt={program.title} 
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  <img
+                    src={program.image || "https://placehold.co/800x500/059669/white?text=Program"}
+                    alt={program.name}
+                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
+                    onError={(e) => { e.currentTarget.src = "https://placehold.co/800x500/059669/white?text=Program"; }}
                   />
                   <div className={`absolute inset-0 bg-gradient-to-t ${program.color} opacity-80`}></div>
                   <div className="absolute bottom-6 left-6 text-white">
@@ -854,15 +962,15 @@ export default function SportsLandingPage() {
                 <div className="p-8">
                   <p className="text-gray-600 mb-6">{program.description}</p>
                   <ul className="mb-8 space-y-3">
-                    {program.benefits.map((benefit, i) => (
+                    {program.features?.map((benefit, i) => (
                       <li key={i} className="flex items-center">
                         <div className="w-2 h-2 bg-emerald-500 rounded-full mr-4"></div>
                         <span className="text-gray-700">{benefit}</span>
                       </li>
                     ))}
                   </ul>
-                  <motion.button 
-                    onClick={() => setShowModal(true)}
+                  <motion.button
+                    onClick={() => handleEnroll(program)}
                     className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-4 rounded-xl font-medium transition-all duration-300"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
@@ -872,6 +980,7 @@ export default function SportsLandingPage() {
                 </div>
               </motion.div>
             ))}
+
           </motion.div>
         </div>
       </section>
@@ -887,13 +996,13 @@ export default function SportsLandingPage() {
             variants={containerVariants}
             className="text-center mb-20"
           >
-            <motion.h2 
+            <motion.h2
               variants={itemVariants}
               className="text-4xl md:text-5xl font-bold mb-6"
             >
               Why Choose Yohan Sports?
             </motion.h2>
-            <motion.p 
+            <motion.p
               variants={itemVariants}
               className="text-xl opacity-90 max-w-3xl mx-auto"
             >
@@ -929,6 +1038,159 @@ export default function SportsLandingPage() {
         </div>
       </section>
 
+      {/* Enrollment Modal */}
+      {showEnrollmentModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 50 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="bg-white rounded-3xl max-w-2xl w-full p-8 shadow-2xl"
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-gray-900">Enroll in {selectedProgram?.name}</h3>
+              <button
+                onClick={() => {
+                  setShowEnrollmentModal(false);
+                  resetFormData(); // clear form when closing
+                  setSelectedProgram(null);
+                }}
+                className="text-gray-500 hover:text-gray-700 text-2xl"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="mb-6 p-4 bg-emerald-50 rounded-xl">
+              <div className="flex items-center mb-2">
+                <Clock className="w-5 h-5 text-emerald-600 mr-2" />
+                <span className="font-medium text-emerald-800">{selectedProgram?.duration} • {selectedProgram?.format}</span>
+              </div>
+              <div className="flex items-center">
+                <Target className="w-5 h-5 text-emerald-600 mr-2" />
+                <span className="text-emerald-800">Level: {selectedProgram?.level}</span>
+              </div>
+            </div>
+
+            {formStatus === 'success' ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-center py-10"
+              >
+                <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <CheckCircle className="text-white w-10 h-10" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Enrollment Successful!</h3>
+                <p className="text-gray-600">Thank you for enrolling. Our team will contact you shortly.</p>
+              </motion.div>
+            ) : formStatus === 'error' ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-center py-10"
+              >
+                <div className="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <AlertCircle className="text-white w-10 h-10" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Something Went Wrong</h3>
+                <p className="text-gray-600">Please try again or contact us directly.</p>
+              </motion.div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-lg font-medium text-gray-700 mb-3">Full Name *</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      placeholder="John Doe"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-lg font-medium text-gray-700 mb-3">Email *</label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      placeholder="john@example.com"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-lg font-medium text-gray-700 mb-3">Phone *</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      placeholder="(123) 456-7890"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-lg font-medium text-gray-700 mb-3">Primary Sport *</label>
+                    <select
+                      name="sport"
+                      value={formData.sport}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    >
+                      <option value="">Select your primary sport</option>
+                      <option value="cricket">Cricket</option>
+                      <option value="football">Football</option>
+                      <option value="basketball">Basketball</option>
+                      <option value="swimming">Swimming</option>
+                      <option value="tennis">Tennis</option>
+                      <option value="athletics">Athletics</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                </div>
+
+
+                <div className="bg-gray-50 p-4 rounded-xl">
+                  <h4 className="font-bold text-gray-900 mb-2">Program Details:</h4>
+                  <p className="text-gray-700">{selectedProgram?.name}</p>
+                  <p className="text-emerald-600 font-bold mt-1">₹{(selectedProgram?.price || 0).toLocaleString()}</p>
+                </div>
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="terms"
+                    required
+                    className="w-5 h-5 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
+                  />
+                  <label htmlFor="terms" className="ml-3 text-gray-700">
+                    I agree to the <a href="#" className="text-emerald-600 hover:underline">terms and conditions</a>
+                  </label>
+                </div>
+
+                <motion.button
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-4 rounded-xl font-medium text-lg transition-all duration-300"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Complete Enrollment
+                </motion.button>
+              </form>
+            )}
+          </motion.div>
+        </div>
+      )}
+
       {/* Coaches Section */}
       <section ref={coachesRef} className="py-28 bg-gradient-to-b from-gray-50 to-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -939,13 +1201,13 @@ export default function SportsLandingPage() {
             variants={containerVariants}
             className="text-center mb-20"
           >
-            <motion.h2 
+            <motion.h2
               variants={itemVariants}
               className="text-4xl md:text-5xl font-bold text-gray-900 mb-6"
             >
               Meet Our Expert Coaches
             </motion.h2>
-            <motion.p 
+            <motion.p
               variants={itemVariants}
               className="text-xl text-gray-600 max-w-3xl mx-auto"
             >
@@ -960,20 +1222,20 @@ export default function SportsLandingPage() {
             variants={containerVariants}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
           >
-            {coaches.map((coach, index) => (
+            {coachesArray.map((coach, index) => (
               <motion.div
-                key={coach.id}
+                key={coach._id || coach.id || `${coach.name || 'coach'}-${idx}`}
                 variants={itemVariants}
                 whileHover={{ y: -15, scale: 1.03 }}
                 className="bg-white rounded-3xl overflow-hidden shadow-2xl hover:shadow-emerald-500/10 transition-all duration-500 group"
               >
                 <div className="h-80 bg-gray-200 relative overflow-hidden">
-                  <img 
-                    src={coach.image} 
-                    alt={coach.name} 
+                  <img
+                    src={coach.images?.[0]?.url}
+                    alt={coach.name}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
-                  <motion.div 
+                  <motion.div
                     className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6"
                     whileHover={{ opacity: 1 }}
                   >
@@ -987,7 +1249,7 @@ export default function SportsLandingPage() {
                 <div className="p-6">
                   <p className="text-gray-600 text-sm mb-4">{coach.qualifications}</p>
                   <div className="flex flex-wrap gap-2">
-                    {coach.specialties.map((specialty, i) => (
+                    {coach.specialties?.map((specialty, i) => (
                       <span key={i} className="bg-emerald-100 text-emerald-800 text-xs px-3 py-1 rounded-full font-medium">
                         {specialty}
                       </span>
@@ -1010,13 +1272,13 @@ export default function SportsLandingPage() {
             variants={containerVariants}
             className="text-center mb-20"
           >
-            <motion.h2 
+            <motion.h2
               variants={itemVariants}
               className="text-4xl md:text-5xl font-bold text-gray-900 mb-6"
             >
               Success Stories
             </motion.h2>
-            <motion.p 
+            <motion.p
               variants={itemVariants}
               className="text-xl text-gray-600 max-w-3xl mx-auto"
             >
@@ -1056,22 +1318,21 @@ export default function SportsLandingPage() {
                   </div>
                 </div>
                 <div className="flex justify-center">
-                  <img 
-                    src={testimonials[currentTestimonial].logo} 
-                    alt={testimonials[currentTestimonial].school} 
+                  <img
+                    src={testimonials[currentTestimonial].logo}
+                    alt={testimonials[currentTestimonial].school}
                     className="h-12"
                   />
                 </div>
               </motion.div>
-              
+
               <div className="flex justify-center mt-8 space-x-2">
                 {testimonials.map((_, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentTestimonial(index)}
-                    className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                      index === currentTestimonial ? 'bg-emerald-600' : 'bg-gray-300'
-                    }`}
+                    className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentTestimonial ? 'bg-emerald-600' : 'bg-gray-300'
+                      }`}
                   />
                 ))}
               </div>
@@ -1095,16 +1356,16 @@ export default function SportsLandingPage() {
                 Highlight & Impact
               </h2>
               <p className="text-xl mb-8 opacity-90 leading-relaxed">
-                Our programs have created a lasting impact on thousands of athletes, 
-                helping them achieve their dreams and represent their institutions 
+                Our programs have created a lasting impact on thousands of athletes,
+                helping them achieve their dreams and represent their institutions
                 at national and international levels.
               </p>
               <p className="text-xl mb-12 opacity-90 leading-relaxed">
-                From school championships to national titles, our systematic approach 
-                to sports education has consistently delivered champions who excel 
+                From school championships to national titles, our systematic approach
+                to sports education has consistently delivered champions who excel
                 both in their sport and academics.
               </p>
-              
+
               <div className="grid grid-cols-3 gap-8">
                 <div className="text-center">
                   <div className="text-4xl font-bold mb-2">42+</div>
@@ -1120,7 +1381,7 @@ export default function SportsLandingPage() {
                 </div>
               </div>
             </motion.div>
-            
+
             <motion.div
               initial="hidden"
               whileInView="visible"
@@ -1135,9 +1396,9 @@ export default function SportsLandingPage() {
                   whileHover={{ scale: 1.05, rotate: index % 2 === 0 ? 2 : -2 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <img 
-                    src={image} 
-                    alt={`Highlight ${index + 1}`} 
+                  <img
+                    src={image}
+                    alt={`Highlight ${index + 1}`}
                     className="w-full h-full object-cover"
                   />
                 </motion.div>
@@ -1148,66 +1409,62 @@ export default function SportsLandingPage() {
       </section>
 
       {/* Contact */}
-      <section ref={contactRef} className="py-28 bg-gradient-to-b from-white to-gray-50">
+      <section className="py-20 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
-            initial="hidden"
-            whileInView="visible"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
-            variants={containerVariants}
+            transition={{ duration: 0.8 }}
             className="max-w-4xl mx-auto"
           >
-            <div className="text-center mb-20">
-              <motion.h2 
-                variants={itemVariants}
-                className="text-4xl md:text-5xl font-bold text-gray-900 mb-6"
-              >
-                Get in Touch
-              </motion.h2>
-              <motion.p 
-                variants={itemVariants}
-                className="text-xl text-gray-600 max-w-3xl mx-auto"
-              >
-                Ready to start your sports journey? Contact us today!
-              </motion.p>
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                Send Us a Message
+              </h2>
+              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                Fill out the form below and we'll get back to you as soon as possible
+              </p>
             </div>
 
             <motion.div
               variants={fadeInUp}
-              className="bg-white rounded-3xl p-12 shadow-2xl border border-gray-100"
+              className="bg-white rounded-3xl p-8 shadow-2xl border border-gray-100"
             >
-              {formSubmitted ? (
-                <div className="text-center py-16">
-                  <motion.div
-                    initial={{ scale: 0, rotate: -180 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    className="w-24 h-24 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl"
-                  >
-                    <Award className="text-white w-12 h-12" />
-                  </motion.div>
-                  <motion.h3 
-                    className="text-3xl font-bold text-gray-900 mb-4"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                  >
-                    Thank You!
-                  </motion.h3>
-                  <motion.p 
-                    className="text-gray-600 text-xl"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                  >
-                    We've received your message and will get back to you soon.
-                  </motion.p>
-                </div>
+              {formStatus === 'success' ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-center py-12"
+                >
+                  <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <CheckCircle className="text-white w-10 h-10" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Message Sent Successfully!</h3>
+                  <p className="text-gray-600">
+                    Thank you for contacting us. We'll get back to you within 24 hours.
+                  </p>
+                </motion.div>
+              ) : formStatus === 'error' ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-center py-12"
+                >
+                  <div className="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <AlertCircle className="text-white w-10 h-10" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Something Went Wrong</h3>
+                  <p className="text-gray-600">
+                    Please try again or contact us directly at yohanSports@gmail.com
+                  </p>
+                </motion.div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-8">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label htmlFor="name" className="block text-lg font-medium text-gray-700 mb-3">
-                        Full Name
+                        Full Name *
                       </label>
                       <input
                         type="text"
@@ -1222,7 +1479,7 @@ export default function SportsLandingPage() {
                     </div>
                     <div>
                       <label htmlFor="email" className="block text-lg font-medium text-gray-700 mb-3">
-                        Email Address
+                        Email Address *
                       </label>
                       <input
                         type="email"
@@ -1236,8 +1493,8 @@ export default function SportsLandingPage() {
                       />
                     </div>
                   </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label htmlFor="phone" className="block text-lg font-medium text-gray-700 mb-3">
                         Phone Number
@@ -1248,32 +1505,52 @@ export default function SportsLandingPage() {
                         name="phone"
                         value={formData.phone}
                         onChange={handleInputChange}
-                        required
                         className="w-full px-6 py-4 border border-gray-300 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-300"
                         placeholder="(123) 456-7890"
                       />
                     </div>
                     <div>
-                      <label htmlFor="type" className="block text-lg font-medium text-gray-700 mb-3">
-                        I'm interested as a
+                      <label htmlFor="subject" className="block text-lg font-medium text-gray-700 mb-3">
+                        Subject *
                       </label>
-                      <select
-                        id="type"
-                        name="type"
-                        value={formData.type}
+                      <input
+                        type="text"
+                        id="subject"
+                        name="subject"
+                        value={formData.subject}
                         onChange={handleInputChange}
+                        required
                         className="w-full px-6 py-4 border border-gray-300 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-300"
-                      >
-                        <option value="individual">Individual</option>
-                        <option value="school">School Representative</option>
-                        <option value="college">College Representative</option>
-                      </select>
+                        placeholder="Regarding trial session"
+                      />
                     </div>
                   </div>
-                  
+
+                  <div>
+                    <label htmlFor="type" className="block text-lg font-medium text-gray-700 mb-3">
+                      I'm interested as a *
+                    </label>
+                    <select
+                      id="type"
+                      name="type"
+                      value={formData.type}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-6 py-4 border border-gray-300 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-300"
+                    >
+
+                      <option value="college">General</option>
+                      <option value="school">School Representative</option>
+                      <option value="parent">Program</option>
+                      <option value="parent">Event</option>
+                      <option value="parent">Corporate</option>
+                      <option value="parent">Sponsorship</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
                   <div>
                     <label htmlFor="message" className="block text-lg font-medium text-gray-700 mb-3">
-                      Message
+                      Message *
                     </label>
                     <textarea
                       id="message"
@@ -1281,11 +1558,12 @@ export default function SportsLandingPage() {
                       value={formData.message}
                       onChange={handleInputChange}
                       rows={6}
+                      required
                       className="w-full px-6 py-4 border border-gray-300 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-300"
-                      placeholder="Tell us about your needs and goals..."
+                      placeholder="Tell us about your needs, questions, or how we can help you..."
                     ></textarea>
                   </div>
-                  
+
                   <div className="flex items-start">
                     <div className="flex items-center h-6">
                       <input
@@ -1302,14 +1580,25 @@ export default function SportsLandingPage() {
                       </label>
                     </div>
                   </div>
-                  
+
                   <motion.button
                     type="submit"
-                    className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-5 rounded-2xl font-bold text-lg transition-all duration-300 shadow-2xl hover:shadow-emerald-500/25"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    disabled={formStatus === 'submitting'}
+                    className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-5 rounded-2xl font-bold text-lg transition-all duration-300 shadow-2xl hover:shadow-emerald-500/25 disabled:opacity-70 disabled:cursor-not-allowed"
+                    whileHover={{ scale: formStatus !== 'submitting' ? 1.02 : 1 }}
+                    whileTap={{ scale: formStatus !== 'submitting' ? 0.98 : 1 }}
                   >
-                    Send Message
+                    {formStatus === 'submitting' ? (
+                      <div className="flex items-center justify-center">
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-3"></div>
+                        Sending Message...
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center">
+                        Send Message
+                        <Send className="w-5 h-5 ml-3" />
+                      </div>
+                    )}
                   </motion.button>
                 </form>
               )}
@@ -1319,7 +1608,7 @@ export default function SportsLandingPage() {
       </section>
 
       {/* Footer */}
-      <Footer/>
+      <Footer />
 
       {/* Modal */}
       <AnimatePresence>
@@ -1340,7 +1629,7 @@ export default function SportsLandingPage() {
             >
               <div className="flex justify-between items-center mb-8">
                 <h3 className="text-2xl font-bold text-gray-900">Book a Trial Session</h3>
-                <motion.button 
+                <motion.button
                   onClick={() => setShowModal(false)}
                   className="text-gray-500 hover:text-gray-700 text-2xl"
                   whileHover={{ scale: 1.2 }}
@@ -1349,7 +1638,7 @@ export default function SportsLandingPage() {
                   ✕
                 </motion.button>
               </div>
-              
+
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
@@ -1377,7 +1666,7 @@ export default function SportsLandingPage() {
                     />
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-lg font-medium text-gray-700 mb-3">Phone</label>
@@ -1405,7 +1694,7 @@ export default function SportsLandingPage() {
                     </select>
                   </div>
                 </div>
-                
+
                 <div>
                   <label className="block text-lg font-medium text-gray-700 mb-3">Preferred Date</label>
                   <input
@@ -1413,7 +1702,7 @@ export default function SportsLandingPage() {
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   />
                 </div>
-                
+
                 <div className="flex items-center">
                   <input
                     type="checkbox"
@@ -1425,7 +1714,7 @@ export default function SportsLandingPage() {
                     I agree to the <a href="#" className="text-emerald-600 hover:underline">privacy policy</a>
                   </label>
                 </div>
-                
+
                 <motion.button
                   type="submit"
                   className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-4 rounded-xl font-medium text-lg transition-all duration-300"

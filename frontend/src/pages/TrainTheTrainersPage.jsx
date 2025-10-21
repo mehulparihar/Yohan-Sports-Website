@@ -5,9 +5,10 @@ import { motion, useAnimation, useInView, useScroll, useTransform } from 'framer
 import { Users, Award, Trophy, Calendar, MapPin, Clock, TrendingUp, Shield, Star, CheckCircle, BookOpen, GraduationCap, Target, Heart, ChevronRight } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import useStore from '../stores';
 
-// Mock data for train the trainer
-const programs = [
+// Mock data for train the trainer (kept as fallback)
+const MOCK_PROGRAMS = [
   {
     id: 1,
     name: "Certified Sports Coach Program",
@@ -148,7 +149,7 @@ const testimonials = [
 const certificationBenefits = [
   "Internationally recognized certification",
   "Access to exclusive coaching resources and tools",
-  "Lifetime membership to SportEdu Coach Network",
+  "Lifetime membership to yohansports Coach Network",
   "Priority job placement assistance",
   "Continuing education credits",
   "Professional liability insurance discounts",
@@ -185,51 +186,126 @@ const faqs = [
 
 
 const TrainTheTrainersPage = () => {
-   const [activeTab, setActiveTab] = useState('programs');
+  // Tabs & UI state (unchanged)
+  const [activeTab, setActiveTab] = useState('programs');
   const [selectedProgram, setSelectedProgram] = useState(null);
   const [showEnrollmentModal, setShowEnrollmentModal] = useState(false);
   const [activeFaq, setActiveFaq] = useState(null);
-  const [enrollmentForm, setEnrollmentForm] = useState({
+  const [formStatus, setFormStatus] = useState('idle');
+
+  const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
-    experience: '',
-    sport: '',
-    program: ''
+    subject: '',
+    type: 'General',
+    program: '',
+    event: '',
+    message: '',
+    privacy: false
   });
 
+  // Zustand store for programs
+  const { programs, fetchPrograms, createEnquiry } = useStore();
+
+  // Fetch programs on mount if not present
+  useEffect(() => {
+    // defensive: if programs.list isn't an array or is empty, fetch
+    const list = programs && programs.list;
+    const hasArray = Array.isArray(list) && list.length > 0;
+    // Also handle wrapper shape: programs.list?.data
+    const wrapped = list && list.data && Array.isArray(list.data) && list.data.length > 0;
+    if (!hasArray && !wrapped) {
+      fetchPrograms();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Helper to normalize programs from store (handles resp wrappers)
+  const getProgramsArray = () => {
+    if (!programs) return MOCK_PROGRAMS;
+
+    // If store already holds array at programs.list
+    if (Array.isArray(programs.list) && programs.list.length > 0) return programs.list;
+
+    // If programs.list is a wrapper: { data: [...] }
+    if (programs.list && Array.isArray(programs.list.data)) return programs.list.data;
+
+    // If server returned at programs.data
+    if (Array.isArray(programs.data) && programs.data.length > 0) return programs.data;
+    if (programs.data && Array.isArray(programs.data.data) && programs.data.data.length > 0) return programs.data.data;
+
+    // fallback to mock data so UI still renders
+    return MOCK_PROGRAMS;
+  };
+
+  // Enrollment handlers (unchanged functionality)
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setEnrollmentForm(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleEnroll = (program) => {
     setSelectedProgram(program);
-    setEnrollmentForm(prev => ({ ...prev, program: program.name }));
+    setFormData(prev => ({ ...prev, program: program.name }));
     setShowEnrollmentModal(true);
   };
 
-  const handleSubmitEnrollment = (e) => {
-    e.preventDefault();
-    // Handle enrollment submission
-    console.log('Enrollment submitted:', { ...enrollmentForm });
-    setShowEnrollmentModal(false);
-    // Reset form
-    setEnrollmentForm({
+  const resetFormData = () => {
+    setFormData({
       name: '',
       email: '',
       phone: '',
-      experience: '',
-      sport: '',
-      program: ''
+      subject: '',
+      type: 'General',
+      program: '',
+      event: '',
+      message: '',
+      privacy: false,
     });
+  };
+
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setFormStatus('submitting');
+
+    try {
+      const payload = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        type: formData.type,
+        sport: formData.sport,
+        programId: selectedProgram?._id || selectedProgram?.id || null,
+        subject: formData.subject ? formData.subject.toLowerCase() : "Enquiry",
+        message: formData.message ? formData.message : "No message provided",
+      };
+
+      // createEnquiry returns { ok: true/false, data or error } per your slice
+      const resp = await createEnquiry(payload);
+      if (resp && resp.ok) {
+        setFormStatus('success');
+        resetFormData();
+      } else {
+        setFormStatus('error');
+      }
+    } catch (err) {
+      console.error('createEnquiry error', err);
+      setFormStatus('error');
+    } finally {
+      // auto-reset success message after a short delay
+      setTimeout(() => {
+        setFormStatus('idle');
+      }, 4000);
+    }
   };
 
   const toggleFaq = (index) => {
     setActiveFaq(activeFaq === index ? null : index);
   };
 
-  // Animation variants
+  // Animation variants (kept same)
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -267,14 +343,17 @@ const TrainTheTrainersPage = () => {
     visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: "easeOut" } }
   };
 
+  // Get the programs to render (either from store or fallback)
+  const programsToRender = getProgramsArray();
+
   return (
     <div className="bg-white">
-      <Navbar/>
+      <Navbar />
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden bg-gradient-to-br from-emerald-50 to-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <motion.h1 
+            <motion.h1
               className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -282,74 +361,18 @@ const TrainTheTrainersPage = () => {
             >
               Train the <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Trainer</span>
             </motion.h1>
-            <motion.p 
+            <motion.p
               className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
             >
-              Become a certified sports coach with our internationally recognized 
+              Become a certified sports coach with our internationally recognized
               training programs designed to develop world-class coaching professionals.
             </motion.p>
           </div>
         </div>
       </section>
-
-      {/* Program Stats */}
-      {/* <section className="py-16 bg-gradient-to-br from-gray-50 via-white to-gray-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Program Impact
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Transforming coaching professionals since 2011
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={containerVariants}
-            className="grid grid-cols-2 md:grid-cols-4 gap-6"
-          >
-            {[
-              { number: 500, label: "Certified Coaches", icon: Users },
-              { number: 95, label: "Success Rate %", icon: Trophy },
-              { number: 150, label: "Partner Institutions", icon: GraduationCap },
-              { number: 12, label: "Years Experience", icon: Award }
-            ].map((stat, index) => (
-              <motion.div
-                key={index}
-                variants={itemVariants}
-                whileHover={{ y: -10, scale: 1.05 }}
-                className="bg-white rounded-2xl p-6 shadow-lg text-center border border-gray-100 hover:border-emerald-200 transition-all duration-300"
-              >
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mx-auto mb-4">
-                  <stat.icon className="text-white w-6 h-6" />
-                </div>
-                <motion.div 
-                  className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2"
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true, margin: "-100px" }}
-                  transition={{ duration: 1, delay: index * 0.2 }}
-                >
-                  {stat.number}+
-                </motion.div>
-                <p className="text-gray-700 font-medium">{stat.label}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section> */}
 
       {/* Navigation Tabs */}
       <section className="py-12 bg-gradient-to-b from-white to-gray-50">
@@ -365,11 +388,10 @@ const TrainTheTrainersPage = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-6 py-3 rounded-full font-medium transition-all duration-300 ${
-                  activeTab === tab.id
+                className={`px-6 py-3 rounded-full font-medium transition-all duration-300 ${activeTab === tab.id
                     ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                  }`}
               >
                 {tab.name}
               </button>
@@ -385,17 +407,18 @@ const TrainTheTrainersPage = () => {
               variants={containerVariants}
               className="grid grid-cols-1 lg:grid-cols-2 gap-8"
             >
-              {programs.map((program) => (
+              {programsToRender.map((program) => (
                 <motion.div
-                  key={program.id}
+                  key={program._id || program.id || program.name}
                   variants={itemVariants}
                   whileHover={{ y: -10, scale: 1.02 }}
                   className="bg-white rounded-3xl overflow-hidden shadow-2xl hover:shadow-emerald-500/10 transition-all duration-500"
                 >
                   <div className="h-64 overflow-hidden relative">
-                    <img 
-                      src={program.image} 
-                      alt={program.name} 
+                    <img
+                      src={program.images?.[0]?.url || "https://placehold.co/800x500/059669/white?text=Program"}
+                      alt={program.name}
+                      onError={(e) => { e.currentTarget.src = "https://placehold.co/800x500/059669/white?text=Coach+Certification"; }}
                       className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
                     />
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-6">
@@ -414,11 +437,11 @@ const TrainTheTrainersPage = () => {
                       <span className="ml-3 text-sm text-gray-600">Next Batch: {program.nextBatch}</span>
                     </div>
                     <p className="text-gray-600 mb-6 leading-relaxed">{program.description}</p>
-                    
+
                     <div className="mb-6">
                       <h4 className="font-bold text-gray-900 mb-3">Key Features:</h4>
                       <ul className="space-y-2">
-                        {program.features.map((feature, index) => (
+                        {(program.features || []).map((feature, index) => (
                           <li key={index} className="flex items-center">
                             <CheckCircle className="w-4 h-4 text-emerald-600 mr-3 flex-shrink-0" />
                             <span className="text-gray-700">{feature}</span>
@@ -426,9 +449,9 @@ const TrainTheTrainersPage = () => {
                         ))}
                       </ul>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
-                      <div className="text-2xl font-bold text-emerald-600">₹{program.price.toLocaleString()}</div>
+                      <div className="text-2xl font-bold text-emerald-600">₹{(program.price || 0).toLocaleString()}</div>
                       <motion.button
                         onClick={() => handleEnroll(program)}
                         className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
@@ -464,7 +487,7 @@ const TrainTheTrainersPage = () => {
                   Our 12-week program covers all essential aspects of modern sports coaching
                 </p>
               </motion.div>
-              
+
               <motion.div
                 variants={containerVariants}
                 className="space-y-6"
@@ -500,7 +523,7 @@ const TrainTheTrainersPage = () => {
                   </motion.div>
                 ))}
               </motion.div>
-              
+
               <motion.div
                 variants={itemVariants}
                 className="mt-12 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-3xl p-8 text-white text-center"
@@ -509,7 +532,7 @@ const TrainTheTrainersPage = () => {
                 <h4 className="text-2xl font-bold mb-2">Ready to Start Your Coaching Journey?</h4>
                 <p className="opacity-90 mb-6">Enroll in our flagship Certified Sports Coach Program today!</p>
                 <motion.button
-                  onClick={() => handleEnroll(programs[0])}
+                  onClick={() => handleEnroll(programsToRender[0])}
                   className="bg-white text-emerald-600 hover:bg-gray-100 px-8 py-3 rounded-xl font-bold transition-all duration-300 shadow-lg hover:shadow-xl"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -537,12 +560,12 @@ const TrainTheTrainersPage = () => {
                   className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 group"
                 >
                   <div className="h-64 bg-gray-200 relative overflow-hidden">
-                    <img 
-                      src={trainer.image} 
-                      alt={trainer.name} 
+                    <img
+                      src={trainer.image}
+                      alt={trainer.name}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
-                    <motion.div 
+                    <motion.div
                       className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6"
                       whileHover={{ opacity: 1 }}
                     >
@@ -597,10 +620,10 @@ const TrainTheTrainersPage = () => {
                   Certification Benefits
                 </h3>
                 <p className="text-gray-600">
-                  What you get with your SportEdu certification
+                  What you get with your yohansports certification
                 </p>
               </motion.div>
-              
+
               <motion.div
                 variants={containerVariants}
                 className="grid grid-cols-1 md:grid-cols-2 gap-6"
@@ -619,7 +642,7 @@ const TrainTheTrainersPage = () => {
                   </motion.div>
                 ))}
               </motion.div>
-              
+
               <motion.div
                 variants={itemVariants}
                 className="mt-12 text-center"
@@ -716,9 +739,9 @@ const TrainTheTrainersPage = () => {
                 className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 text-center border border-white/20 hover:border-white/40 transition-all duration-500"
               >
                 <div className="w-20 h-20 mx-auto mb-6 overflow-hidden rounded-full">
-                  <img 
-                    src={testimonial.image} 
-                    alt={testimonial.name} 
+                  <img
+                    src={testimonial.image}
+                    alt={testimonial.name}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -745,14 +768,18 @@ const TrainTheTrainersPage = () => {
           >
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-2xl font-bold text-gray-900">Enroll in {selectedProgram?.name}</h3>
-              <button 
-                onClick={() => setShowEnrollmentModal(false)}
+              <button
+                onClick={() => {
+                  setShowEnrollmentModal(false);
+                  resetFormData(); // clear form when closing
+                  setSelectedProgram(null);
+                }}
                 className="text-gray-500 hover:text-gray-700 text-2xl"
               >
                 ✕
               </button>
             </div>
-            
+
             <div className="mb-6 p-4 bg-emerald-50 rounded-xl">
               <div className="flex items-center mb-2">
                 <Clock className="w-5 h-5 text-emerald-600 mr-2" />
@@ -763,115 +790,129 @@ const TrainTheTrainersPage = () => {
                 <span className="text-emerald-800">Level: {selectedProgram?.level}</span>
               </div>
             </div>
-            
-            <form onSubmit={handleSubmitEnrollment} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-lg font-medium text-gray-700 mb-3">Full Name *</label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={enrollmentForm.name}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    placeholder="John Doe"
-                  />
-                </div>
-                <div>
-                  <label className="block text-lg font-medium text-gray-700 mb-3">Email *</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={enrollmentForm.email}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    placeholder="john@example.com"
-                  />
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-lg font-medium text-gray-700 mb-3">Phone *</label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={enrollmentForm.phone}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    placeholder="(123) 456-7890"
-                  />
-                </div>
-                <div>
-                  <label className="block text-lg font-medium text-gray-700 mb-3">Years of Coaching Experience</label>
-                  <input
-                    type="number"
-                    name="experience"
-                    value={enrollmentForm.experience}
-                    onChange={handleInputChange}
-                    min="0"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    placeholder="0"
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-lg font-medium text-gray-700 mb-3">Primary Sport *</label>
-                <select
-                  name="sport"
-                  value={enrollmentForm.sport}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                >
-                  <option value="">Select your primary sport</option>
-                  <option value="cricket">Cricket</option>
-                  <option value="football">Football</option>
-                  <option value="basketball">Basketball</option>
-                  <option value="swimming">Swimming</option>
-                  <option value="tennis">Tennis</option>
-                  <option value="athletics">Athletics</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              
-              <div className="bg-gray-50 p-4 rounded-xl">
-                <h4 className="font-bold text-gray-900 mb-2">Program Details:</h4>
-                <p className="text-gray-700">{selectedProgram?.name}</p>
-                <p className="text-emerald-600 font-bold mt-1">₹{selectedProgram?.price.toLocaleString()}</p>
-              </div>
-              
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="terms"
-                  required
-                  className="w-5 h-5 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
-                />
-                <label htmlFor="terms" className="ml-3 text-gray-700">
-                  I agree to the <a href="#" className="text-emerald-600 hover:underline">terms and conditions</a>
-                </label>
-              </div>
-              
-              <motion.button
-                type="submit"
-                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-4 rounded-xl font-medium text-lg transition-all duration-300"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+
+            {formStatus === 'success' ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-center py-10"
               >
-                Complete Enrollment
-              </motion.button>
-            </form>
+                <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <CheckCircle className="text-white w-10 h-10" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Enrollment Successful!</h3>
+                <p className="text-gray-600">Thank you for enrolling. Our team will contact you shortly.</p>
+              </motion.div>
+            ) : formStatus === 'error' ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-center py-10"
+              >
+                <div className="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <AlertCircle className="text-white w-10 h-10" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Something Went Wrong</h3>
+                <p className="text-gray-600">Please try again or contact us directly.</p>
+              </motion.div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-lg font-medium text-gray-700 mb-3">Full Name *</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      placeholder="John Doe"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-lg font-medium text-gray-700 mb-3">Email *</label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      placeholder="john@example.com"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-lg font-medium text-gray-700 mb-3">Phone *</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      placeholder="(123) 456-7890"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-lg font-medium text-gray-700 mb-3">Primary Sport *</label>
+                    <select
+                      name="sport"
+                      value={formData.sport}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    >
+                      <option value="">Select your primary sport</option>
+                      <option value="cricket">Cricket</option>
+                      <option value="football">Football</option>
+                      <option value="basketball">Basketball</option>
+                      <option value="swimming">Swimming</option>
+                      <option value="tennis">Tennis</option>
+                      <option value="athletics">Athletics</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                </div>
+
+
+                <div className="bg-gray-50 p-4 rounded-xl">
+                  <h4 className="font-bold text-gray-900 mb-2">Program Details:</h4>
+                  <p className="text-gray-700">{selectedProgram?.name}</p>
+                  <p className="text-emerald-600 font-bold mt-1">₹{(selectedProgram?.price || 0).toLocaleString()}</p>
+                </div>
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="terms"
+                    required
+                    className="w-5 h-5 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
+                  />
+                  <label htmlFor="terms" className="ml-3 text-gray-700">
+                    I agree to the <a href="#" className="text-emerald-600 hover:underline">terms and conditions</a>
+                  </label>
+                </div>
+
+                <motion.button
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-4 rounded-xl font-medium text-lg transition-all duration-300"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Complete Enrollment
+                </motion.button>
+              </form>
+            )}
           </motion.div>
         </div>
       )}
-      <Footer/>
+      <Footer />
     </div>
   );
 }
 
-export default TrainTheTrainersPage
+export default TrainTheTrainersPage;

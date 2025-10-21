@@ -3,9 +3,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Lock, Mail, Eye, EyeOff, AlertCircle, CheckCircle, User } from 'lucide-react';
-import { Link } from "react-router-dom";
-import Navbar from '../components/Navbar';
-
+import { Link, useNavigate } from 'react-router-dom';
+import useStore from '../stores';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -13,31 +12,32 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [msg, setMsg] = useState('');
   const [success, setSuccess] = useState('');
+
+  const navigate = useNavigate();
+  const { login, auth, error} = useStore();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
+    setMsg('');
     setSuccess('');
 
-    // Simulate API call
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const result = await login(email, password);
       
-      // Mock validation
-      if (email === 'admin@sportedu.com' && password === 'password123') {
+      if (result.ok) {
         setSuccess('Login successful! Redirecting...');
-        // In a real app, you would redirect to dashboard
+        // Redirect to admin dashboard
         setTimeout(() => {
-          window.location.href = '/admin';
+          navigate('/admin/dashboard');
         }, 2000);
       } else {
-        setError('Invalid email or password. Please try again.');
+        setMsg(error || 'Invalid email or password. Please try again.');
       }
     } catch (err) {
-      setError('An error occurred. Please try again later.');
+      setMsg('An error occurred. Please try again later.');
     } finally {
       setIsLoading(false);
     }
@@ -143,7 +143,7 @@ const LoginPage = () => {
               variants={itemVariants}
               className="opacity-90"
             >
-              Sign in to your SportEdu admin account
+              Sign in to your YohanSports admin account
             </motion.p>
           </div>
 
@@ -168,7 +168,7 @@ const LoginPage = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10 w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
-                    placeholder="admin@sportedu.com"
+                    placeholder="admin@yohansports.com"
                   />
                 </div>
               </motion.div>
@@ -223,7 +223,7 @@ const LoginPage = () => {
                   </label>
                 </div>
                 <div className="text-sm">
-                  <Link href="/forgot-password" className="font-medium text-emerald-600 hover:text-emerald-500">
+                  <Link to="/forgot-password" className="font-medium text-emerald-600 hover:text-emerald-500">
                     Forgot password?
                   </Link>
                 </div>
@@ -231,7 +231,7 @@ const LoginPage = () => {
 
               {/* Error/Success Messages */}
               <AnimatePresence>
-                {error && (
+                {msg && (
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -239,7 +239,7 @@ const LoginPage = () => {
                     className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center"
                   >
                     <AlertCircle className="h-5 w-5 text-red-400 mr-3 flex-shrink-0" />
-                    <span className="text-red-700 text-sm">{error}</span>
+                    <span className="text-red-700 text-sm">{msg}</span>
                   </motion.div>
                 )}
                 {success && (
@@ -259,10 +259,10 @@ const LoginPage = () => {
               <motion.div variants={itemVariants}>
                 <button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isLoading || auth.loading}
                   className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-3 px-4 rounded-xl font-medium text-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  {isLoading ? (
+                  {isLoading || auth.loading ? (
                     <div className="flex items-center justify-center">
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-3"></div>
                       Signing In...
@@ -273,18 +273,7 @@ const LoginPage = () => {
                 </button>
               </motion.div>
             </form>
-
-            {/* Demo Credentials */}
-            <motion.div
-              variants={itemVariants}
-              className="mt-8 p-4 bg-emerald-50 rounded-xl border border-emerald-200"
-            >
-              <h3 className="text-sm font-medium text-emerald-800 mb-2">Demo Credentials</h3>
-              <p className="text-sm text-emerald-700">
-                <span className="font-medium">Email:</span> admin@sportedu.com<br />
-                <span className="font-medium">Password:</span> password123
-              </p>
-            </motion.div>
+      
 
             {/* Footer */}
             <motion.div
@@ -293,7 +282,7 @@ const LoginPage = () => {
             >
               <p>
                 Don't have an account?{' '}
-                <Link href="/contact" className="font-medium text-emerald-600 hover:text-emerald-500">
+                <Link to="/contact" className="font-medium text-emerald-600 hover:text-emerald-500">
                   Contact Support
                 </Link>
               </p>
@@ -313,7 +302,7 @@ const LoginPage = () => {
               <User className="text-white w-4 h-4" />
             </div>
             <span className="ml-2 text-lg font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-              SportEdu
+              YohanSports
             </span>
           </div>
           <p className="mt-2 text-sm text-gray-600">
@@ -325,4 +314,4 @@ const LoginPage = () => {
   );
 }
 
-export default LoginPage
+export default LoginPage;

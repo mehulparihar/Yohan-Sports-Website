@@ -2,17 +2,15 @@ import Enquiry from "../models/enquiry.model.js";
 
 export const createEnquiry = async (req, res) => {
     try {
-        const { name, email, phone, type, programId, eventId, message } = req.body;
-        if (!name || !message) return res.status(400).json({ error: 'name and message are required' });
+        
+        const payload = { ...req.body };
+        if (!payload.name || !payload.message) return res.status(400).json({ error: 'name and message are required' });
 
-        const meta = {
-            ip: req.ip,
+        payload.meta = {
+            ip: req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress,
             userAgent: req.get('User-Agent'),
-            referer: req.get('Referer') || null
+            referer: req.get('Referer') || null,
         };
-
-        const payload = { name, email, phone, type, programId, eventId, message, meta };
-        if (req.user?.id) payload.createdBy = req.user.id; // if you allow logged-in users to create enquiries
 
         const enquiry = new Enquiry(payload);
         await enquiry.save();
@@ -33,6 +31,7 @@ export const createEnquiry = async (req, res) => {
 };
 
 export const allEnquiry = async (req, res) => {
+    console.log('Fetching all enquiries with query:', req.query);
     try {
         const q = {};
         if (req.query.status) q.status = req.query.status;

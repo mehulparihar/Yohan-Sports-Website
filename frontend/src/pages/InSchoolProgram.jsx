@@ -2,12 +2,13 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, useAnimation, useInView, useScroll, useTransform } from 'framer-motion';
-import { Users, Award, Trophy, Calendar, MapPin, Clock, TrendingUp, Shield, Star, CheckCircle, GraduationCap, BookOpen, Target, Heart, School,ChevronRight } from 'lucide-react';
+import { Users, Award, Trophy, Calendar, MapPin, Clock, TrendingUp, Shield, Star, CheckCircle, GraduationCap, BookOpen, Target, Heart, School, ChevronRight } from 'lucide-react';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
+import useStore from '../stores'; // <-- zustand store
 
 // Mock data for in-school programs
-const programs = [
+const MOCK_PROGRAMS = [
   {
     id: 1,
     name: "Comprehensive Sports Curriculum",
@@ -190,46 +191,99 @@ const faqs = [
 
 
 const InSchoolProgram = () => {
-   const [activeTab, setActiveTab] = useState('programs');
+  const [activeTab, setActiveTab] = useState('programs');
   const [selectedProgram, setSelectedProgram] = useState(null);
   const [showInquiryModal, setShowInquiryModal] = useState(false);
+  const [showEnrollmentModal, setShowEnrollmentModal] = useState(false);
+  const [formStatus, setFormStatus] = useState('idle');
   const [activeFaq, setActiveFaq] = useState(null);
-  const [inquiryForm, setInquiryForm] = useState({
-    schoolName: '',
-    contactPerson: '',
+
+  const [formData, setFormData] = useState({
+    name: '',
     email: '',
     phone: '',
-    studentCount: '',
-    programInterest: '',
-    message: ''
+    subject: '',
+    type: 'General',
+    program: '',
+    event: '',
+    message: '',
+    privacy: false
   });
+
+  const { programs, fetchPrograms, createEnquiry } = useStore();
+
+  useEffect(() => {
+    const list = programs && programs.list;
+    const hasArray = Array.isArray(list) && list.length > 0;
+    const wrapped = list && list.data && Array.isArray(list.data) && list.data.length > 0;
+    const dataArray = programs && programs.data && Array.isArray(programs.data) && programs.data.length > 0;
+    if (!hasArray && !wrapped && !dataArray) {
+      // call fetchPrograms (slice handles loading/error)
+      if (typeof fetchPrograms === 'function') fetchPrograms();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setInquiryForm(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleInquire = (program) => {
+
+  const handleEnroll = (program) => {
     setSelectedProgram(program);
-    setInquiryForm(prev => ({ ...prev, programInterest: program.name }));
-    setShowInquiryModal(true);
+    setFormData(prev => ({ ...prev, program: program.name }));
+    setShowEnrollmentModal(true);
   };
 
-  const handleSubmitInquiry = (e) => {
-    e.preventDefault();
-    // Handle inquiry submission
-    console.log('Inquiry submitted:', { ...inquiryForm });
-    setShowInquiryModal(false);
-    // Reset form
-    setInquiryForm({
-      schoolName: '',
-      contactPerson: '',
+  const resetFormData = () => {
+    setFormData({
+      name: '',
       email: '',
       phone: '',
-      studentCount: '',
-      programInterest: '',
-      message: ''
+      subject: '',
+      type: 'General',
+      program: '',
+      event: '',
+      message: '',
+      privacy: false,
     });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setFormStatus('submitting');
+
+    try {
+      const payload = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        type: formData.type,
+        sport: formData.sport,
+        programId: selectedProgram?._id || selectedProgram?.id || null,
+        subject: formData.subject ? formData.subject.toLowerCase() : "Enquiry",
+        message: formData.message ? formData.message : "No message provided",
+      };
+
+      // createEnquiry returns { ok: true/false, data or error } per your slice
+      const resp = await createEnquiry(payload);
+      if (resp && resp.ok) {
+        setFormStatus('success');
+        resetFormData();
+      } else {
+        setFormStatus('error');
+      }
+    } catch (err) {
+      console.error('createEnquiry error', err);
+      setFormStatus('error');
+    } finally {
+      // auto-reset success message after a short delay
+      setTimeout(() => {
+        setFormStatus('idle');
+      }, 4000);
+    }
   };
 
   const toggleFaq = (index) => {
@@ -274,14 +328,39 @@ const InSchoolProgram = () => {
     visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: "easeOut" } }
   };
 
+  const getProgramsArray = () => {
+    if (!programs) return MOCK_PROGRAMS;
+
+    if (Array.isArray(programs.list) && programs.list.length > 0) return programs.list;
+    if (programs.list && Array.isArray(programs.list.data) && programs.list.data.length > 0) return programs.list.data;
+    if (Array.isArray(programs.data) && programs.data.length > 0) return programs.data;
+    if (programs.data && Array.isArray(programs.data.data) && programs.data.data.length > 0) return programs.data.data;
+
+    return MOCK_PROGRAMS;
+  };
+
+  const normalizeProgram = (p) => ({
+    id: p.id || p._id || Math.random().toString(36).slice(2),
+    name: p.name || p.title || 'Program',
+    description: p.description || p.summary || 'Description coming soon.',
+    duration: p.duration || 'Flexible',
+    features: Array.isArray(p.features) ? p.features : (p.features ? [p.features] : []),
+    image: p.image || "https://placehold.co/800x500/059669/white?text=Program",
+    sports: Array.isArray(p.sports) ? p.sports : (p.sports ? [p.sports] : []),
+    ageGroups: p.ageGroups || p.age_group || 'All ages',
+    schoolsPartnered: p.schoolsPartnered || p.schools_partnered || 0
+  });
+
+  const programsToRender = getProgramsArray().map(normalizeProgram);
+
   return (
     <div className="bg-white">
-      <Navbar/>
+      <Navbar />
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden bg-gradient-to-br from-emerald-50 to-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <motion.h1 
+            <motion.h1
               className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -289,74 +368,19 @@ const InSchoolProgram = () => {
             >
               In-School <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Programs</span>
             </motion.h1>
-            <motion.p 
+            <motion.p
               className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
             >
-              Transform your school's sports education with our comprehensive, 
+              Transform your school's sports education with our comprehensive,
               professionally managed in-school programs designed for academic institutions.
             </motion.p>
           </div>
         </div>
       </section>
 
-      {/* Program Stats */}
-      {/* <section className="py-16 bg-gradient-to-br from-gray-50 via-white to-gray-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Program Impact in Schools
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Partnering with educational institutions since 2011
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={containerVariants}
-            className="grid grid-cols-2 md:grid-cols-4 gap-6"
-          >
-            {[
-              { number: 150, label: "Schools Partnered", icon: School },
-              { number: 8500, label: "Students Trained", icon: Users },
-              { number: 42, label: "National Champions", icon: Trophy },
-              { number: 95, label: "Parent Satisfaction %", icon: Heart }
-            ].map((stat, index) => (
-              <motion.div
-                key={index}
-                variants={itemVariants}
-                whileHover={{ y: -10, scale: 1.05 }}
-                className="bg-white rounded-2xl p-6 shadow-lg text-center border border-gray-100 hover:border-emerald-200 transition-all duration-300"
-              >
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mx-auto mb-4">
-                  <stat.icon className="text-white w-6 h-6" />
-                </div>
-                <motion.div 
-                  className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2"
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true, margin: "-100px" }}
-                  transition={{ duration: 1, delay: index * 0.2 }}
-                >
-                  {stat.number}+
-                </motion.div>
-                <p className="text-gray-700 font-medium">{stat.label}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section> */}
 
       {/* Navigation Tabs */}
       <section className="py-12 bg-gradient-to-b from-white to-gray-50">
@@ -372,11 +396,10 @@ const InSchoolProgram = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-6 py-3 rounded-full font-medium transition-all duration-300 ${
-                  activeTab === tab.id
+                className={`px-6 py-3 rounded-full font-medium transition-all duration-300 ${activeTab === tab.id
                     ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                  }`}
               >
                 {tab.name}
               </button>
@@ -392,7 +415,7 @@ const InSchoolProgram = () => {
               variants={containerVariants}
               className="grid grid-cols-1 lg:grid-cols-2 gap-8"
             >
-              {programs.map((program) => (
+              {programsToRender.map((program) => (
                 <motion.div
                   key={program.id}
                   variants={itemVariants}
@@ -400,10 +423,11 @@ const InSchoolProgram = () => {
                   className="bg-white rounded-3xl overflow-hidden shadow-2xl hover:shadow-emerald-500/10 transition-all duration-500"
                 >
                   <div className="h-64 overflow-hidden relative">
-                    <img 
-                      src={program.image} 
-                      alt={program.name} 
+                    <img
+                      src={program.image}
+                      alt={program.name}
                       className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
+                      onError={(e) => { e.currentTarget.src = "https://placehold.co/800x500/059669/white?text=Program"; }}
                     />
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-6">
                       <h3 className="text-2xl font-bold text-white mb-2">{program.name}</h3>
@@ -421,7 +445,7 @@ const InSchoolProgram = () => {
                       <span className="ml-3 text-sm text-gray-600">{program.schoolsPartnered}+ schools</span>
                     </div>
                     <p className="text-gray-600 mb-6 leading-relaxed">{program.description}</p>
-                    
+
                     <div className="mb-6">
                       <h4 className="font-bold text-gray-900 mb-3">Key Features:</h4>
                       <ul className="space-y-2">
@@ -433,7 +457,7 @@ const InSchoolProgram = () => {
                         ))}
                       </ul>
                     </div>
-                    
+
                     <div className="mb-6">
                       <h4 className="font-bold text-gray-900 mb-2">Sports Offered:</h4>
                       <div className="flex flex-wrap gap-2">
@@ -444,14 +468,14 @@ const InSchoolProgram = () => {
                         ))}
                       </div>
                     </div>
-                    
+
                     <motion.button
-                      onClick={() => handleInquire(program)}
+                      onClick={() => handleEnroll(program)}
                       className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-3 rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
-                      Request Proposal
+                      Enroll Now
                     </motion.button>
                   </div>
                 </motion.div>
@@ -479,7 +503,7 @@ const InSchoolProgram = () => {
                   Our 24-week academic program ensures comprehensive development
                 </p>
               </motion.div>
-              
+
               <motion.div
                 variants={containerVariants}
                 className="space-y-6"
@@ -555,7 +579,7 @@ const InSchoolProgram = () => {
                   Value for students, schools, and parents
                 </p>
               </motion.div>
-              
+
               <motion.div
                 variants={containerVariants}
                 className="grid grid-cols-1 md:grid-cols-3 gap-8"
@@ -583,7 +607,7 @@ const InSchoolProgram = () => {
                   </motion.div>
                 ))}
               </motion.div>
-              
+
               {/* Success Metrics */}
               <motion.div
                 variants={itemVariants}
@@ -629,14 +653,14 @@ const InSchoolProgram = () => {
                   Six-step process for successful program integration
                 </p>
               </motion.div>
-              
+
               <motion.div
                 variants={containerVariants}
                 className="relative"
               >
                 {/* Timeline line */}
                 <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-emerald-500 to-teal-500 hidden md:block"></div>
-                
+
                 <div className="space-y-8">
                   {implementationProcess.map((step, index) => (
                     <motion.div
@@ -741,7 +765,7 @@ const InSchoolProgram = () => {
             {[
               {
                 school: "Lincoln High School",
-                quote: "Student participation in sports increased by 70% and we've won 3 state championships since partnering with SportEdu.",
+                quote: "Student participation in sports increased by 70% and we've won 3 state championships since partnering with yohansports.",
                 role: "Principal Davis",
                 years: "5 years"
               },
@@ -792,10 +816,10 @@ const InSchoolProgram = () => {
               Transform Your School's Sports Program
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-12">
-              Schedule a free consultation with our education specialists to discuss 
+              Schedule a free consultation with our education specialists to discuss
               how we can enhance your school's sports education.
             </p>
-            
+
             <motion.div className="flex flex-col sm:flex-row justify-center gap-6">
               <motion.button
                 onClick={() => setShowInquiryModal(true)}
@@ -818,8 +842,8 @@ const InSchoolProgram = () => {
         </div>
       </section>
 
-      {/* Inquiry Modal */}
-      {showInquiryModal && (
+      {/* Enrollment Modal */}
+      {showEnrollmentModal && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 50 }}
@@ -827,140 +851,152 @@ const InSchoolProgram = () => {
             className="bg-white rounded-3xl max-w-2xl w-full p-8 shadow-2xl"
           >
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold text-gray-900">
-                {selectedProgram ? `Inquiry for ${selectedProgram.name}` : 'School Program Inquiry'}
-              </h3>
-              <button 
-                onClick={() => setShowInquiryModal(false)}
+              <h3 className="text-2xl font-bold text-gray-900">Enroll in {selectedProgram?.name}</h3>
+              <button
+                onClick={() => {
+                  setShowEnrollmentModal(false);
+                  resetFormData(); // clear form when closing
+                  setSelectedProgram(null);
+                }}
                 className="text-gray-500 hover:text-gray-700 text-2xl"
               >
                 ✕
               </button>
             </div>
-            
-            <form onSubmit={handleSubmitInquiry} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-lg font-medium text-gray-700 mb-3">School Name *</label>
-                  <input
-                    type="text"
-                    name="schoolName"
-                    value={inquiryForm.schoolName}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    placeholder="Lincoln High School"
-                  />
-                </div>
-                <div>
-                  <label className="block text-lg font-medium text-gray-700 mb-3">Contact Person *</label>
-                  <input
-                    type="text"
-                    name="contactPerson"
-                    value={inquiryForm.contactPerson}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    placeholder="John Smith"
-                  />
-                </div>
+
+            <div className="mb-6 p-4 bg-emerald-50 rounded-xl">
+              <div className="flex items-center mb-2">
+                <Clock className="w-5 h-5 text-emerald-600 mr-2" />
+                <span className="font-medium text-emerald-800">{selectedProgram?.duration} • {selectedProgram?.format}</span>
               </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-lg font-medium text-gray-700 mb-3">Email *</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={inquiryForm.email}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    placeholder="principal@school.edu"
-                  />
-                </div>
-                <div>
-                  <label className="block text-lg font-medium text-gray-700 mb-3">Phone *</label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={inquiryForm.phone}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    placeholder="(123) 456-7890"
-                  />
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-lg font-medium text-gray-700 mb-3">Approximate Student Count</label>
-                  <input
-                    type="number"
-                    name="studentCount"
-                    value={inquiryForm.studentCount}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    placeholder="500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-lg font-medium text-gray-700 mb-3">Program of Interest</label>
-                  <select
-                    name="programInterest"
-                    value={inquiryForm.programInterest}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                  >
-                    <option value="">Select a program</option>
-                    {programs.map(program => (
-                      <option key={program.id} value={program.name}>{program.name}</option>
-                    ))}
-                    <option value="custom">Custom Program</option>
-                  </select>
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-lg font-medium text-gray-700 mb-3">Additional Information</label>
-                <textarea
-                  name="message"
-                  value={inquiryForm.message}
-                  onChange={handleInputChange}
-                  rows={4}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                  placeholder="Tell us about your school's current sports program, facilities, and specific requirements..."
-                ></textarea>
-              </div>
-              
               <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="privacy"
-                  required
-                  className="w-5 h-5 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
-                />
-                <label htmlFor="privacy" className="ml-3 text-gray-700">
-                  I agree to the <a href="#" className="text-emerald-600 hover:underline">privacy policy</a>
-                </label>
+                <Target className="w-5 h-5 text-emerald-600 mr-2" />
+                <span className="text-emerald-800">Level: {selectedProgram?.level}</span>
               </div>
-              
-              <motion.button
-                type="submit"
-                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-4 rounded-xl font-medium text-lg transition-all duration-300"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+            </div>
+
+            {formStatus === 'success' ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-center py-10"
               >
-                Send Inquiry
-              </motion.button>
-            </form>
+                <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <CheckCircle className="text-white w-10 h-10" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Enrollment Successful!</h3>
+                <p className="text-gray-600">Thank you for enrolling. Our team will contact you shortly.</p>
+              </motion.div>
+            ) : formStatus === 'error' ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-center py-10"
+              >
+                <div className="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <AlertCircle className="text-white w-10 h-10" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Something Went Wrong</h3>
+                <p className="text-gray-600">Please try again or contact us directly.</p>
+              </motion.div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-lg font-medium text-gray-700 mb-3">Full Name *</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      placeholder="John Doe"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-lg font-medium text-gray-700 mb-3">Email *</label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      placeholder="john@example.com"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-lg font-medium text-gray-700 mb-3">Phone *</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      placeholder="(123) 456-7890"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-lg font-medium text-gray-700 mb-3">Primary Sport *</label>
+                    <select
+                      name="sport"
+                      value={formData.sport}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    >
+                      <option value="">Select your primary sport</option>
+                      <option value="cricket">Cricket</option>
+                      <option value="football">Football</option>
+                      <option value="basketball">Basketball</option>
+                      <option value="swimming">Swimming</option>
+                      <option value="tennis">Tennis</option>
+                      <option value="athletics">Athletics</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                </div>
+
+
+                <div className="bg-gray-50 p-4 rounded-xl">
+                  <h4 className="font-bold text-gray-900 mb-2">Program Details:</h4>
+                  <p className="text-gray-700">{selectedProgram?.name}</p>
+                  <p className="text-emerald-600 font-bold mt-1">₹{(selectedProgram?.price || 0).toLocaleString()}</p>
+                </div>
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="terms"
+                    required
+                    className="w-5 h-5 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
+                  />
+                  <label htmlFor="terms" className="ml-3 text-gray-700">
+                    I agree to the <a href="#" className="text-emerald-600 hover:underline">terms and conditions</a>
+                  </label>
+                </div>
+
+                <motion.button
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-4 rounded-xl font-medium text-lg transition-all duration-300"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Complete Enrollment
+                </motion.button>
+              </form>
+            )}
           </motion.div>
         </div>
       )}
-      <Footer/>
+      <Footer />
     </div>
   );
 }
 
-export default InSchoolProgram
+export default InSchoolProgram;

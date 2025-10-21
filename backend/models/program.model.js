@@ -15,12 +15,15 @@ const ImageSubSchema = new mongoose.Schema({
 }, { _id: false });
 
 const ProgramSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  slug: { type: String, index: true, unique: true, required: true },
-  sport: { type: String, index: true }, // e.g., 'Football'
+  name: { type: String, required: true },
+  slug: { type: String, unique: true, required: true, index: true },
+  features: [{ type: String, required: true }], // key features / highlights
+  sports: [ {type: String, index: true }], // e.g., 'Football'
   ageGroup: String, // 'U12', 'Adults', etc.
   shortDesc: String,
-  description: String, // rich text / markdown
+  duration: { type: String, required: true },
+  schoolsPartnered: { type: Number, default: 0 },
+  description: { type: String, required: true },
   coachIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Coach' }],
   venueId: { type: mongoose.Schema.Types.ObjectId, ref: 'Venue' },
   price: { type: Number, default: 0 },

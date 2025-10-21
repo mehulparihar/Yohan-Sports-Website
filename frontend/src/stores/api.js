@@ -1,31 +1,17 @@
-const DEFAULT_BASE = process.env.REACT_APP_API_BASE_URL || '/api';
+import axios from "axios";
 
-export const API = {
-  baseUrl: DEFAULT_BASE,
-  getAuthToken() {
-    try { return localStorage.getItem('sg_accessToken'); } catch (e) { return null; }
-  },
-
-  async request(path, { method = 'GET', body = null, headers = {}, raw = false } = {}) {
-    const url = `${this.baseUrl}${path}`;
-    const token = this.getAuthToken();
-    const opts = { method, headers: { ...headers } };
-    if (token) opts.headers.Authorization = `Bearer ${token}`;
-
-    if (body && !(body instanceof FormData) && !raw) {
-      opts.headers['Content-Type'] = 'application/json';
-      opts.body = JSON.stringify(body);
-    } else if (body) {
-      // FormData or raw body
-      opts.body = body;
-    }
-
-    const res = await fetch(url, opts);
-    const text = await res.text();
-    let data;
-    try { data = text ? JSON.parse(text) : null; } catch (e) { data = text; }
-    return { ok: res.ok, status: res.status, data };
+const axiosInstance = axios.create({
+    baseURL: "http://localhost:5000/api",
+    withCredentials: true, // send cookies
+    headers: {
+        "Content-Type": "application/json",
+    },
+});
+axiosInstance.interceptors.request.use(config => {
+  if (config.data instanceof FormData) {
+    delete config.headers['Content-Type'];
   }
-};
+  return config;
+});
 
-export default API;
+export default axiosInstance;

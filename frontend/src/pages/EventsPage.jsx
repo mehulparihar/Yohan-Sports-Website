@@ -2,12 +2,14 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, useAnimation, useInView, useScroll, useTransform } from 'framer-motion';
-import { Calendar, Users, Trophy, Award, Star, MapPin, Clock, Play, CheckCircle, TrendingUp, Shield } from 'lucide-react';
+import { Calendar, Users, Trophy, Award, Star, MapPin, Clock, Play, CheckCircle, TrendingUp, Shield, AlertCircle } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import useStore from '../stores';
+
 
 // Mock data for all event types
-const featuredEvents = [
+const FEATURED_EVENTS_MOCK = [
   {
     id: 1,
     title: "National Sports Championship 2024",
@@ -24,13 +26,13 @@ const featuredEvents = [
   }
 ];
 
-const tournaments = [
+const TOURNAMENTS_MOCK = [
   {
     id: 2,
     title: "Inter-School Cricket League",
     date: "July 5-20, 2024",
     time: "4:00 PM - 7:00 PM",
-    location: "SportEdu Cricket Ground",
+    location: "yohansports Cricket Ground",
     description: "Weekly cricket matches between top school teams in the region.",
     image: "https://placehold.co/600x400/dc2626/white?text=Cricket+League",
     category: "Tournament",
@@ -52,30 +54,16 @@ const tournaments = [
     registrationOpen: true,
     teams: 24,
     price: "₹1,500 per team"
-  },
-  {
-    id: 4,
-    title: "Swimming Gala",
-    date: "September 5, 2024",
-    time: "10:00 AM - 4:00 PM",
-    location: "Olympic Swimming Pool",
-    description: "Individual swimming competition across multiple age groups and stroke categories.",
-    image: "https://placehold.co/600x400/0891b2/white?text=Swimming+Gala",
-    category: "Tournament",
-    type: "tournament",
-    registrationOpen: false,
-    participants: 120,
-    price: "₹800 per participant"
   }
 ];
 
-const camps = [
+const CAMPS_MOCK = [
   {
     id: 5,
     title: "Summer Sports Camp",
     date: "July 1-15, 2024",
     time: "8:00 AM - 2:00 PM",
-    location: "SportEdu Academy, Main Campus",
+    location: "yohansports Academy, Main Campus",
     description: "Intensive 2-week summer camp focusing on skill development, fitness, and team building for ages 8-16.",
     image: "https://placehold.co/600x400/f59e0b/white?text=Summer+Camp",
     category: "Camp",
@@ -83,30 +71,16 @@ const camps = [
     registrationOpen: true,
     spotsAvailable: 120,
     price: "₹8,000 per participant"
-  },
-  {
-    id: 6,
-    title: "Winter Training Camp",
-    date: "December 20-30, 2024",
-    time: "9:00 AM - 3:00 PM",
-    location: "Indoor Sports Complex",
-    description: "Indoor training camp focusing on technique refinement and mental conditioning during winter break.",
-    image: "https://placehold.co/600x400/10b981/white?text=Winter+Camp",
-    category: "Camp",
-    type: "camp",
-    registrationOpen: false,
-    spotsAvailable: 80,
-    price: "₹6,500 per participant"
   }
 ];
 
-const workshops = [
+const WORKSHOPS_MOCK = [
   {
     id: 7,
     title: "Coaching Certification Workshop",
     date: "August 5-7, 2024",
     time: "10:00 AM - 4:00 PM",
-    location: "SportEdu Training Center",
+    location: "yohansports Training Center",
     description: "Professional development workshop for aspiring sports coaches. Learn modern coaching techniques and methodologies.",
     image: "https://placehold.co/600x400/8b5cf6/white?text=Coaching+Workshop",
     category: "Workshop",
@@ -114,24 +88,10 @@ const workshops = [
     registrationOpen: true,
     spotsAvailable: 50,
     price: "₹12,000 per participant"
-  },
-  {
-    id: 8,
-    title: "Sports Nutrition Seminar",
-    date: "July 25, 2024",
-    time: "2:00 PM - 5:00 PM",
-    location: "Conference Hall, SportEdu Academy",
-    description: "Learn about proper nutrition, hydration, and recovery strategies for optimal athletic performance.",
-    image: "https://placehold.co/600x400/ec4899/white?text=Nutrition+Seminar",
-    category: "Workshop",
-    type: "workshop",
-    registrationOpen: true,
-    spotsAvailable: 100,
-    price: "₹2,500 per participant"
   }
 ];
 
-const communityEvents = [
+const COMMUNITY_MOCK = [
   {
     id: 9,
     title: "Community Sports Day",
@@ -144,54 +104,19 @@ const communityEvents = [
     type: "community",
     registrationOpen: true,
     price: "Free"
-  },
-  {
-    id: 10,
-    title: "Sports Career Guidance Session",
-    date: "November 10, 2024",
-    time: "3:00 PM - 6:00 PM",
-    location: "Grand Auditorium",
-    description: "Interactive session for students and parents about career opportunities in sports and sports management.",
-    image: "https://placehold.co/600x400/dc2626/white?text=Career+Session",
-    category: "Community",
-    type: "community",
-    registrationOpen: true,
-    price: "Free"
   }
 ];
 
-const pastEvents = [
+const PAST_EVENTS_MOCK = [
   {
     id: 11,
     title: "Winter Sports Festival 2023",
     date: "December 10-12, 2023",
-    location: "SportEdu Academy",
+    location: "yohansports Academy",
     description: "Annual winter festival featuring indoor sports, workshops, and family activities.",
     image: "https://placehold.co/600x400/f59e0b/white?text=Winter+Festival+2023",
     participants: "350+",
     highlights: "Swimming championships, basketball finals, coaching clinics",
-    type: "past"
-  },
-  {
-    id: 12,
-    title: "Youth Leadership Summit 2023",
-    date: "November 5, 2023",
-    location: "Grand Convention Center",
-    description: "One-day summit focusing on leadership development through sports for young athletes.",
-    image: "https://placehold.co/600x400/10b981/white?text=Leadership+Summit+2023",
-    participants: "200+",
-    highlights: "Keynote speakers, panel discussions, networking sessions",
-    type: "past"
-  },
-  {
-    id: 13,
-    title: "National Inter-School Tournament 2023",
-    date: "September 22-24, 2023",
-    location: "State Sports Stadium",
-    description: "Prestigious tournament bringing together top school teams from across the country.",
-    image: "https://placehold.co/600x400/8b5cf6/white?text=Inter-School+2023",
-    participants: "450+",
-    highlights: "42 schools participated, 8 sports disciplines, national media coverage",
     type: "past"
   }
 ];
@@ -203,11 +128,210 @@ const eventStats = [
   { number: 12, label: "Years of Excellence", icon: Award }
 ];
 
+
 const EventsPage = () => {
   const [activeTab, setActiveTab] = useState('all');
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [formStatus, setFormStatus] = useState('idle');
   const eventsRef = useRef(null);
+
+  const { events, fetchEvents, createEnquiry } = useStore();
+
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    subject: '',
+    type: 'General',
+    program: '',
+    age: '',
+    institution: '',
+    event: '',
+    message: '',
+    privacy: false
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleEnroll = (event) => {
+    setSelectedEvent(event);
+    setFormData(prev => ({ ...prev, event: event.name }));
+    setShowRegistrationModal(true);
+  };
+  const handleRegister = (event) => {
+    setSelectedEvent(event);
+    setShowRegistrationModal(true);
+  };
+
+  const resetFormData = () => {
+    setFormData({
+      name: '',
+      email: '',
+      phone: '',
+      subject: '',
+      type: 'General',
+      program: '',
+      age: '',
+      institution: '',
+      event: '',
+      message: '',
+      privacy: false
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setFormStatus('submitting');
+
+    try {
+      const payload = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        type: formData.type ? formData.type.toLowerCase() : 'general',
+        sport: formData.sport ? formData.sport : 'Not Defined',
+        eventId: selectedEvent?._id || selectedEvent?.id || null,
+        age: formData.age ? parseInt(formData.age) : null,
+        institution: formData.institution ? formData.institution : '',
+        subject: formData.subject ? formData.subject.toLowerCase() : "Enquiry",
+        message: formData.message ? formData.message : "No message provided",
+      };
+
+      // createEnquiry returns { ok: true/false, data or error } per your slice
+      const resp = await createEnquiry(payload);
+      if (resp && resp.ok) {
+        setFormStatus('success');
+        resetFormData();
+      } else {
+        setFormStatus('error');
+      }
+    } catch (err) {
+      console.error('createEnquiry error', err);
+      setFormStatus('error');
+    } finally {
+      // auto-reset success message after a short delay
+      setTimeout(() => {
+        setFormStatus('idle');
+      }, 4000);
+    }
+  };
+
+  // Fetch events on mount if store is empty (defensive)
+  useEffect(() => {
+    const list = events && events.list;
+    const hasArray = Array.isArray(list) && list.length > 0;
+    const wrapped = list && list.data && Array.isArray(list.data) && list.data.length > 0;
+    const dataArray = events && events.data && Array.isArray(events.data) && events.data.length > 0;
+    if (!hasArray && !wrapped && !dataArray) {
+      if (typeof fetchEvents === 'function') fetchEvents();
+    }
+  }, []);
+
+  // Helpers to normalize store shapes and fallback to mocks
+  const getEventsByType = (type) => {
+    // Try to extract arrays from multiple possible shapes
+    if (!events) return null;
+
+    if (Array.isArray(events.list) && events.list.length > 0) return events.list;
+    if (events.list && Array.isArray(events.list.data) && events.list.data.length > 0) return events.list.data;
+    if (Array.isArray(events.data) && events.data.length > 0) return events.data;
+    if (events.data && Array.isArray(events.data.data) && events.data.data.length > 0) return events.data.data;
+
+    return null;
+  };
+
+  const normalizeEvent = (e) => ({
+    id: e.id || e._id || Math.random().toString(36).slice(2),
+    title: e.title || e.name || 'Untitled Event',
+    date: e.date || e.dates || '',
+    time: e.time || e.timeslot || '',
+    location: e.location || e.venue || 'TBA',
+    description: e.description || e.summary || '',
+    image: e.image || e.banner || 'https://placehold.co/600x400/059669/white?text=Event',
+    category: e.category || e.type || 'Event',
+    type: e.type || (e.category && e.category.toLowerCase()) || 'event',
+    registrationOpen: typeof e.registrationOpen === 'boolean' ? e.registrationOpen : true,
+    participants: e.participants || e.attendees || '',
+    highlights: e.highlights || e.notes || '',
+    price: e.price || e.fee || '',
+    spotsAvailable: e.spotsAvailable || e.capacity || null,
+    teams: e.teams || null
+  });
+
+  // Build lists per type: prefer store data; otherwise mock fallback
+  const storeEvents = getEventsByType();
+  const allEventsList = storeEvents ? storeEvents.map(normalizeEvent) : [
+    ...TOURNAMENTS_MOCK,
+    ...CAMPS_MOCK,
+    ...WORKSHOPS_MOCK,
+    ...COMMUNITY_MOCK
+  ];
+
+  const featuredEvents = storeEvents ? storeEvents.filter(ev => (ev.type === 'featured' || ev.isFeatured)).map(normalizeEvent) : FEATURED_EVENTS_MOCK;
+  const tournaments = storeEvents ? storeEvents.filter(ev => (ev.type === 'tournament' || (ev.category && ev.category.toLowerCase() === 'tournament'))).map(normalizeEvent) : TOURNAMENTS_MOCK;
+  const camps = storeEvents ? storeEvents.filter(ev => (ev.type === 'camp' || (ev.category && ev.category.toLowerCase() === 'camp'))).map(normalizeEvent) : CAMPS_MOCK;
+  const workshops = storeEvents ? storeEvents.filter(ev => (ev.type === 'workshop' || (ev.category && ev.category.toLowerCase() === 'workshop'))).map(normalizeEvent) : WORKSHOPS_MOCK;
+  const communityEvents = storeEvents ? storeEvents.filter(ev => (ev.type === 'community' || (ev.category && ev.category.toLowerCase() === 'community'))).map(normalizeEvent) : COMMUNITY_MOCK;
+  const pastEvents = storeEvents ? storeEvents.filter(ev => (ev.type === 'past' || (ev.past === true))).map(normalizeEvent) : PAST_EVENTS_MOCK;
+
+  const getCurrentEvents = () => {
+    switch (activeTab) {
+      case 'tournaments':
+        return tournaments;
+      case 'camps':
+        return camps;
+      case 'workshops':
+        return workshops;
+      case 'community':
+        return communityEvents;
+      case 'past':
+        return pastEvents;
+      default:
+        return allEventsList;
+    }
+  };
+
+  const currentEvents = getCurrentEvents();
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1, transition: { duration: 0.5, ease: "easeOut" } }
+  };
+
+
+
+  // Counter hook (kept as-is if you want to enable stats later)
+  const useCounter = (end, duration = 2000) => {
+    const [count, setCount] = useState(0);
+    useEffect(() => {
+      let start = 0;
+      const increment = end / (duration / 16);
+      const timer = setInterval(() => {
+        start += increment;
+        if (start >= end) {
+          setCount(end);
+          clearInterval(timer);
+        } else {
+          setCount(Math.ceil(start));
+        }
+      }, 16);
+      return () => clearInterval(timer);
+    }, [end, duration]);
+    return count;
+  };
 
   // Get all events based on active tab
   const getAllEvents = () => {
@@ -227,73 +351,21 @@ const EventsPage = () => {
     }
   };
 
-  const currentEvents = getAllEvents();
-
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        duration: 0.5,
-        ease: "easeOut"
-      }
-    }
-  };
 
   const fadeInUp = {
     hidden: { opacity: 0, y: 60 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
   };
 
-  const handleRegister = (event) => {
-    setSelectedEvent(event);
-    setShowRegistrationModal(true);
-  };
-
-  // Custom counter hook
-  const useCounter = (end, duration = 2000) => {
-    const [count, setCount] = useState(0);
-    
-    useEffect(() => {
-      let start = 0;
-      const increment = end / (duration / 16);
-      
-      const timer = setInterval(() => {
-        start += increment;
-        if (start >= end) {
-          setCount(end);
-          clearInterval(timer);
-        } else {
-          setCount(Math.ceil(start));
-        }
-      }, 16);
-      
-      return () => clearInterval(timer);
-    }, [end, duration]);
-    
-    return count;
-  };
 
   return (
     <div className="bg-white">
-      <Navbar/>
+      <Navbar />
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden bg-gradient-to-br from-emerald-50 to-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <motion.h1 
+            <motion.h1
               className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -301,72 +373,20 @@ const EventsPage = () => {
             >
               Sports <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Events</span>
             </motion.h1>
-            <motion.p 
+            <motion.p
               className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
             >
-              Discover our comprehensive calendar of tournaments, camps, workshops, 
+              Discover our comprehensive calendar of tournaments, camps, workshops,
               community events, and past highlights that make us the premier sports education provider.
             </motion.p>
           </div>
         </div>
       </section>
 
-      {/* Event Stats */}
-      {/* <section className="py-16 bg-gradient-to-br from-gray-50 via-white to-gray-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Our Event Impact
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Years of organizing world-class sports events and experiences
-            </p>
-          </motion.div>
 
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={containerVariants}
-            className="grid grid-cols-2 md:grid-cols-4 gap-6"
-          >
-            {eventStats.map((stat, index) => {
-              const count = useCounter(stat.number);
-              return (
-                <motion.div
-                  key={index}
-                  variants={itemVariants}
-                  whileHover={{ y: -10, scale: 1.05 }}
-                  className="bg-white rounded-2xl p-6 shadow-lg text-center border border-gray-100 hover:border-emerald-200 transition-all duration-300"
-                >
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mx-auto mb-4">
-                    <stat.icon className="text-white w-6 h-6" />
-                  </div>
-                  <motion.div 
-                    className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2"
-                    initial={{ opacity: 0, scale: 0.5 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true, margin: "-100px" }}
-                    transition={{ duration: 1, delay: index * 0.2 }}
-                  >
-                    {count}+
-                  </motion.div>
-                  <p className="text-gray-700 font-medium">{stat.label}</p>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        </div>
-      </section> */}
 
       {/* Featured Event */}
       <section className="py-20 bg-white">
@@ -397,9 +417,9 @@ const EventsPage = () => {
             >
               <div className="grid grid-cols-1 lg:grid-cols-2">
                 <div className="h-96 lg:h-auto">
-                  <img 
-                    src={event.image} 
-                    alt={event.title} 
+                  <img
+                    src={event.image}
+                    alt={event.title}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -434,7 +454,7 @@ const EventsPage = () => {
                     <p className="text-sm opacity-90">{event.highlights}</p>
                   </div>
                   <motion.button
-                    onClick={() => handleRegister(event)}
+                    onClick={() => handleEnroll(event)}
                     className="bg-white text-emerald-600 hover:bg-gray-100 px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 shadow-lg hover:shadow-xl"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -463,11 +483,10 @@ const EventsPage = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-6 py-3 rounded-full font-medium transition-all duration-300 ${
-                  activeTab === tab.id
-                    ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                className={`px-6 py-3 rounded-full font-medium transition-all duration-300 ${activeTab === tab.id
+                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
               >
                 {tab.name}
               </button>
@@ -481,9 +500,8 @@ const EventsPage = () => {
               whileInView="visible"
               viewport={{ once: true, margin: "-100px" }}
               variants={containerVariants}
-              className={`grid grid-cols-1 ${
-                activeTab === 'past' ? 'md:grid-cols-2 lg:grid-cols-3' : 'lg:grid-cols-2'
-              } gap-12`}
+              className={`grid grid-cols-1 ${activeTab === 'past' ? 'md:grid-cols-2 lg:grid-cols-3' : 'lg:grid-cols-2'
+                } gap-12`}
             >
               {currentEvents.map((event) => (
                 <motion.div
@@ -493,19 +511,18 @@ const EventsPage = () => {
                   className="bg-white rounded-3xl overflow-hidden shadow-2xl hover:shadow-emerald-500/10 transition-all duration-500"
                 >
                   <div className={`h-64 overflow-hidden relative ${event.type === 'past' ? 'h-48' : ''}`}>
-                    <img 
-                      src={event.image} 
-                      alt={event.title} 
+                    <img
+                      src={event.image}
+                      alt={event.title}
                       className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
                     />
                     <div className="absolute top-4 right-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                        event.category === 'Tournament' ? 'bg-red-500 text-white' :
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${event.category === 'Tournament' ? 'bg-red-500 text-white' :
                         event.category === 'Camp' ? 'bg-blue-500 text-white' :
-                        event.category === 'Workshop' ? 'bg-purple-500 text-white' :
-                        event.category === 'Community' ? 'bg-green-500 text-white' :
-                        'bg-gray-500 text-white'
-                      }`}>
+                          event.category === 'Workshop' ? 'bg-purple-500 text-white' :
+                            event.category === 'Community' ? 'bg-green-500 text-white' :
+                              'bg-gray-500 text-white'
+                        }`}>
                         {event.category}
                       </span>
                     </div>
@@ -552,7 +569,7 @@ const EventsPage = () => {
                           </div>
                         </div>
                         <p className="text-gray-600 mb-6 leading-relaxed">{event.description}</p>
-                        
+
                         <div className="flex flex-wrap items-center justify-between gap-4">
                           <div className="flex items-center space-x-4">
                             <div className="text-sm">
@@ -572,10 +589,10 @@ const EventsPage = () => {
                               </div>
                             )}
                           </div>
-                          
+
                           {event.registrationOpen ? (
                             <motion.button
-                              onClick={() => handleRegister(event)}
+                              onClick={() => handleEnroll(event)}
                               className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
@@ -673,7 +690,7 @@ const EventsPage = () => {
           </motion.div>
         </div>
       </section>
-      <Footer/>
+      <Footer />
       {/* Registration Modal */}
       {showRegistrationModal && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
@@ -684,14 +701,18 @@ const EventsPage = () => {
           >
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-2xl font-bold text-gray-900">Register for {selectedEvent?.title}</h3>
-              <button 
-                onClick={() => setShowRegistrationModal(false)}
+              <button
+                onClick={() => {
+                  setShowRegistrationModal(false);
+                  resetFormData();
+                  setSelectedEvent(null);
+                }}
                 className="text-gray-500 hover:text-gray-700 text-2xl"
               >
                 ✕
               </button>
             </div>
-            
+
             <div className="mb-6 p-4 bg-emerald-50 rounded-xl">
               <div className="flex items-center mb-2">
                 <Calendar className="w-5 h-5 text-emerald-600 mr-2" />
@@ -702,83 +723,129 @@ const EventsPage = () => {
                 <span className="text-emerald-800">{selectedEvent?.time}</span>
               </div>
             </div>
-            
-            <form className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            {formStatus === 'success' ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-center py-10"
+              >
+                <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <CheckCircle className="text-white w-10 h-10" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Registration Successful!</h3>
+                <p className="text-gray-600">Thank you for registering. We’ll contact you soon.</p>
+              </motion.div>
+            ) : formStatus === 'error' ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-center py-10"
+              >
+                <div className="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <AlertCircle className="text-white w-10 h-10" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Something Went Wrong</h3>
+                <p className="text-gray-600">Please try again or contact us directly.</p>
+              </motion.div>
+            ) : (
+              <form
+                onSubmit={handleSubmit}
+                className="space-y-6"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-lg font-medium text-gray-700 mb-3">Full Name</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      placeholder="John Doe"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-lg font-medium text-gray-700 mb-3">Email</label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      placeholder="john@example.com"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-lg font-medium text-gray-700 mb-3">Phone</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      placeholder="(123) 456-7890"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-lg font-medium text-gray-700 mb-3">Age</label>
+                    <input
+                      type="number"
+                      name="age"
+                      value={formData.age}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      placeholder="16"
+                    />
+                  </div>
+                </div>
+
                 <div>
-                  <label className="block text-lg font-medium text-gray-700 mb-3">Full Name</label>
+                  <label className="block text-lg font-medium text-gray-700 mb-3">School/Institution (if applicable)</label>
                   <input
                     type="text"
-                    required
+                    name="institution"
+                    value={formData.institution}
+                    onChange={handleInputChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    placeholder="John Doe"
+                    placeholder="Lincoln High School"
                   />
                 </div>
-                <div>
-                  <label className="block text-lg font-medium text-gray-700 mb-3">Email</label>
+
+                <div className="flex items-center">
                   <input
-                    type="email"
+                    type="checkbox"
+                    id="terms"
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    placeholder="john@example.com"
+                    className="w-5 h-5 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
                   />
+                  <label htmlFor="terms" className="ml-3 text-gray-700">
+                    I agree to the <a href="#" className="text-emerald-600 hover:underline">terms and conditions</a>
+                  </label>
                 </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-lg font-medium text-gray-700 mb-3">Phone</label>
-                  <input
-                    type="tel"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    placeholder="(123) 456-7890"
-                  />
-                </div>
-                <div>
-                  <label className="block text-lg font-medium text-gray-700 mb-3">Age</label>
-                  <input
-                    type="number"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    placeholder="16"
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-lg font-medium text-gray-700 mb-3">School/Institution (if applicable)</label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                  placeholder="Lincoln High School"
-                />
-              </div>
-              
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="terms"
-                  required
-                  className="w-5 h-5 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
-                />
-                <label htmlFor="terms" className="ml-3 text-gray-700">
-                  I agree to the <a href="#" className="text-emerald-600 hover:underline">terms and conditions</a>
-                </label>
-              </div>
-              
-              <motion.button
-                type="submit"
-                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-4 rounded-xl font-medium text-lg transition-all duration-300"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                Complete Registration
-              </motion.button>
-            </form>
+
+                <motion.button
+                  type="submit"
+                  disabled={formStatus === 'submitting'}
+                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-4 rounded-xl font-medium text-lg transition-all duration-300"
+                  whileHover={{ scale: formStatus !== 'submitting' ? 1.02 : 1 }}
+                  whileTap={{ scale: formStatus !== 'submitting' ? 0.98 : 1 }}
+                >
+                  {formStatus === 'submitting' ? 'Submitting...' : 'Complete Registration'}
+                </motion.button>
+              </form>
+            )}
           </motion.div>
         </div>
       )}
+
     </div>
   );
 }

@@ -1,9 +1,11 @@
+import { deleteFromCloudinary, uploadBufferToCloudinary } from "../lib/cloudinary.js";
 import Coach from "../models/coach.model.js";
 
 export const createCoach = async (req, res) => {
     try {
         const payload = req.body;
         payload.createdBy = req.user.id;
+        console.log(req.files); 
         if (!req.body.name) return res.status(400).json({ error: 'name required' });
         if (req.files?.avatar?.[0]) {
             const buf = req.files.avatar[0].buffer;
@@ -38,6 +40,7 @@ export const createCoach = async (req, res) => {
         await coach.save();
         res.status(201).json({ data: coach });
     } catch (err) {
+        console.log(err);
         res.status(500).json({ message: err.message });
     }
 };
@@ -72,6 +75,7 @@ export const deleteCoach = async (req, res) => {
 
 export const allCoach = async (req, res) => {
     try {
+        console.log("called");
         const coaches = await Coach.find({}).sort({ name: 1 });
         res.json({ data: coaches });
     } catch (err) {

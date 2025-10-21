@@ -1,10 +1,14 @@
 import Event from "../models/event.model.js";
 import upload from "../middleware/upload.js";
 import Program from "../models/program.model.js";
+import { deleteFromCloudinary, uploadBufferToCloudinary } from "../lib/cloudinary.js";
+
 
 export const createEvent = async (req, res) => {
     try {
+        
         const payload = req.body;
+        console.log('Received createEvent payload:', payload);
         if (!payload.title) return res.status(400).json({ error: 'title required' });
 
         payload.createdBy = req.user.id;

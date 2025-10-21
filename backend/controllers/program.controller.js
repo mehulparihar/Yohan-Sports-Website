@@ -5,7 +5,7 @@ import Program from "../models/program.model.js";
 export const createProgram = async (req, res) => {
     try {
         const payload = req.body;
-        if (!payload.title || !payload.slug) return res.status(400).json({ error: 'title and slug required' });
+        if (!payload.name || !payload.slug) return res.status(400).json({ error: 'name and slug required' });
         const exists = await Program.findOne({ slug: payload.slug });
         if (exists) return res.status(409).json({ error: 'slug already taken' });
 
@@ -43,16 +43,19 @@ export const createProgram = async (req, res) => {
         await program.save();
         res.status(201).json({ data: program });
     } catch (err) {
+        console.error('createProgram error:', err);
         res.status(500).json({ message: err.message });
     }
 };
 
 export const updateProgram = async (req, res) => {
     try {
+        console.log('Received updateProgram payload:', req.body);
         const program = await Program.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!program) return res.status(404).json({ error: 'Program not found' });
         res.json({ data: program });
     } catch (err) {
+        console.error('updateProgram error:', err);
         res.status(500).json({ message: err.message })
     }
 };

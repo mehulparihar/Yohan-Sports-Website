@@ -5,12 +5,13 @@ import { motion, useAnimation, useInView, useScroll, useTransform } from 'framer
 import { MapPin, Phone, Mail, Clock, Users, Award, Calendar, Send, CheckCircle, AlertCircle, ChevronRight } from 'lucide-react';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
+import useStore from '../stores';
 
 // Mock data
 const contactInfo = {
   address: "123 Sports Avenue, Athletic City, AC 12345",
   phone: "(123) 456-7890",
-  email: "info@sportedu.com",
+  email: "info@yohansports.com",
   hours: [
     { day: "Monday - Friday", time: "8:00 AM - 8:00 PM" },
     { day: "Saturday", time: "9:00 AM - 6:00 PM" },
@@ -23,7 +24,7 @@ const teamMembers = [
     id: 1,
     name: "Dr. Rajesh Kumar",
     role: "Founder & CEO",
-    email: "rajesh@sportedu.com",
+    email: "rajesh@yohansports.com",
     phone: "(123) 456-7891",
     image: "https://placehold.co/400x400/059669/white?text=RK"
   },
@@ -31,7 +32,7 @@ const teamMembers = [
     id: 2,
     name: "Priya Sharma",
     role: "Director of Operations",
-    email: "priya@sportedu.com",
+    email: "priya@yohansports.com",
     phone: "(123) 456-7892",
     image: "https://placehold.co/400x400/dc2626/white?text=PS"
   },
@@ -39,7 +40,7 @@ const teamMembers = [
     id: 3,
     name: "Vikram Singh",
     role: "Head of Coaching",
-    email: "vikram@sportedu.com",
+    email: "vikram@yohansports.com",
     phone: "(123) 456-7893",
     image: "https://placehold.co/400x400/7c3aed/white?text=VS"
   },
@@ -47,7 +48,7 @@ const teamMembers = [
     id: 4,
     name: "Ananya Patel",
     role: "Academy Director",
-    email: "ananya@sportedu.com",
+    email: "ananya@yohansports.com",
     phone: "(123) 456-7894",
     image: "https://placehold.co/400x400/0891b2/white?text=AP"
   }
@@ -86,12 +87,14 @@ const ContactUs = () => {
     email: '',
     phone: '',
     subject: '',
+    type: 'General',
     message: '',
-    type: 'individual'
+    privacy: false
   });
   const [formStatus, setFormStatus] = useState('idle'); // 'idle', 'submitting', 'success', 'error'
   const [activeFaq, setActiveFaq] = useState(null);
 
+  const { createEnquiry } = useStore();
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -100,25 +103,40 @@ const ContactUs = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormStatus('submitting');
-    
+
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setFormStatus('success');
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        subject: '',
-        message: '',
-        type: 'individual'
-      });
-      
-      // Reset success message after 5 seconds
-      setTimeout(() => setFormStatus('idle'), 5000);
-    } catch (error) {
+      const payload = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        type: formData.type,
+        subject: formData.subject ? formData.subject.toLowerCase() : "",
+        message: formData.message
+      };
+
+      // createEnquiry returns { ok: true/false, data or error } per your slice
+      const resp = await createEnquiry(payload);
+      if (resp && resp.ok) {
+        setFormStatus('success');
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          type: 'individual',
+          subject: '',
+          message: ''
+        });
+      } else {
+        setFormStatus('error');
+      }
+    } catch (err) {
+      console.error('createEnquiry error', err);
       setFormStatus('error');
-      setTimeout(() => setFormStatus('idle'), 5000);
+    } finally {
+      // auto-reset success message after a short delay
+      setTimeout(() => {
+        setFormStatus('idle');
+      }, 4000);
     }
   };
 
@@ -323,10 +341,12 @@ const ContactUs = () => {
                       required
                       className="w-full px-6 py-4 border border-gray-300 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-300"
                     >
-                      <option value="individual">Individual</option>
+                      <option value="college">General</option>
                       <option value="school">School Representative</option>
-                      <option value="college">College Representative</option>
-                      <option value="parent">Parent</option>
+                      <option value="parent">Program</option>
+                      <option value="parent">Event</option>
+                      <option value="parent">Corporate</option>
+                      <option value="parent">Sponsorship</option>
                       <option value="other">Other</option>
                     </select>
                   </div>

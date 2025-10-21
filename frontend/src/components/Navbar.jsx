@@ -4,7 +4,7 @@ import { Award } from "lucide-react";
 import Lenis from "@studio-freight/lenis";
 import { Link } from "react-router-dom";
 
-function Navbar({ theme = "dark", onProgramSelect = () => {} }) {
+function Navbar({ theme = "dark", onProgramSelect = () => { } }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("explore");
   const [isScrolled, setIsScrolled] = useState(false);
@@ -85,11 +85,10 @@ function Navbar({ theme = "dark", onProgramSelect = () => {} }) {
 
   return (
     <header
-      className={`fixed w-full z-50 transition-all duration-500 ${
-        isScrolled
+      className={`fixed w-full z-50 transition-all duration-500 ${isScrolled
           ? "bg-white/95 backdrop-blur-xl shadow-xl py-3"
           : "bg-transparent py-5"
-      }`}
+        }`}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
@@ -111,21 +110,19 @@ function Navbar({ theme = "dark", onProgramSelect = () => {} }) {
             {/* Direct Links */}
             <Link
               to="/"
-              className={`text-sm font-medium ${
-                activeSection === "home"
+              className={`text-sm font-medium ${activeSection === "home"
                   ? "text-emerald-600 font-bold"
                   : "text-gray-700 hover:text-emerald-600"
-              }`}
+                }`}
             >
               Home
             </Link>
             <Link
               to="/about"
-              className={`text-sm font-medium ${
-                activeSection === "about"
+              className={`text-sm font-medium ${activeSection === "about"
                   ? "text-emerald-600 font-bold"
                   : "text-gray-700 hover:text-emerald-600"
-              }`}
+                }`}
             >
               About Us
             </Link>
@@ -133,11 +130,10 @@ function Navbar({ theme = "dark", onProgramSelect = () => {} }) {
             {/* Business dropdown */}
             <div className="relative group">
               <button
-                className={`text-sm font-medium flex items-center gap-1 ${
-                  activeSection === "business"
+                className={`text-sm font-medium flex items-center gap-1 ${activeSection === "business"
                     ? "text-emerald-600 font-bold"
                     : "text-gray-700 hover:text-emerald-600"
-                }`}
+                  }`}
               >
                 Business
                 <svg
@@ -182,11 +178,10 @@ function Navbar({ theme = "dark", onProgramSelect = () => {} }) {
             {/* Programs dropdown */}
             <div className="relative group">
               <button
-                className={`text-sm font-medium flex items-center gap-1 ${
-                  activeSection === "programs"
+                className={`text-sm font-medium flex items-center gap-1 ${activeSection === "programs"
                     ? "text-emerald-600 font-bold"
                     : "text-gray-700 hover:text-emerald-600"
-                }`}
+                  }`}
               >
                 Programs
                 <svg
@@ -231,45 +226,43 @@ function Navbar({ theme = "dark", onProgramSelect = () => {} }) {
             {/* Other Links */}
             <Link
               to="/events"
-              className={`text-sm font-medium ${
-                activeSection === "events"
+              className={`text-sm font-medium ${activeSection === "events"
                   ? "text-emerald-600 font-bold"
                   : "text-gray-700 hover:text-emerald-600"
-              }`}
+                }`}
             >
               Events
             </Link>
             <Link
               to="/blogs"
-              className={`text-sm font-medium ${
-                activeSection === "blogs"
+              className={`text-sm font-medium ${activeSection === "blogs"
                   ? "text-emerald-600 font-bold"
                   : "text-gray-700 hover:text-emerald-600"
-              }`}
+                }`}
             >
               Blogs
             </Link>
             <Link
               to="/testimonials"
-              className={`text-sm font-medium ${
-                activeSection === "testimonials"
+              className={`text-sm font-medium ${activeSection === "testimonials"
                   ? "text-emerald-600 font-bold"
                   : "text-gray-700 hover:text-emerald-600"
-              }`}
+                }`}
             >
               Testimonials
             </Link>
           </nav>
 
-          <motion.button
-            className="hidden md:block bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-8 py-3 rounded-full font-medium transition-all duration-300 shadow-xl hover:shadow-2xl"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            
-          >
-            Enroll Now
-          </motion.button>
-
+          <Link to="/contact" className="hidden md:inline-block">
+            <motion.button
+              className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-8 py-3 rounded-full font-medium transition-all duration-300 shadow-xl hover:shadow-2xl"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              aria-label="Enroll Now - Contact"
+            >
+              Enroll Now
+            </motion.button>
+          </Link>
           {/* Mobile menu button */}
           <button
             className="md:hidden text-gray-700"
@@ -327,7 +320,7 @@ function Navbar({ theme = "dark", onProgramSelect = () => {} }) {
                   Testimonials
                 </Link>
                 <Link
-                  to="/enroll"
+                  to="/contact"
                   onClick={() => setMobileMenuOpen(false)}
                   className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 text-center"
                 >

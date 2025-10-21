@@ -5,9 +5,11 @@ import { motion, useAnimation, useInView, useScroll, useTransform } from 'framer
 import { Calendar, Users, Award, TrendingUp, BookOpen, Clock, Tag, User, MessageCircle, Share2, Search, ChevronRight } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import useStore from '../stores';
+
 
 // Mock blog data
-const blogPosts = [
+const MOCK_BLOGS = [
   {
     id: 1,
     title: "The Science Behind Effective Sports Training",
@@ -131,12 +133,50 @@ const BlogsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 6;
 
+  const { blogs, fetchBlogs } = useStore();
   // Filter posts based on category and search
+  // const filteredPosts = blogPosts.filter(post => {
+  //   const matchesCategory = selectedCategory === 'All' || post.category === selectedCategory;
+  //   const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  //                        post.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //                        post.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+  //   return matchesCategory && matchesSearch;
+  // });
+  useEffect(() => {
+    const list = blogs && blogs.list;
+    const hasArray = Array.isArray(list) && list.length > 0;
+    // handle possible wrapper shapes (list.data)
+    const wrapped = list && list.data && Array.isArray(list.data) && list.data.length > 0;
+    if (!hasArray && !wrapped) {
+      fetchBlogs();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+
+  const getBlogsArray = () => {
+    if (!blogs) return MOCK_BLOGS;
+    // direct array in blogs.list
+    if (Array.isArray(blogs.list) && blogs.list.length > 0) return blogs.list;
+    // wrapper shape blogs.list.data
+    if (blogs.list && Array.isArray(blogs.list.data) && blogs.list.data.length > 0) return blogs.list.data;
+    // server responded at blogs.data
+    if (Array.isArray(blogs.data) && blogs.data.length > 0) return blogs.data;
+    if (blogs.data && Array.isArray(blogs.data.data) && blogs.data.data.length > 0) return blogs.data.data;
+    // fallback to mock
+    return MOCK_BLOGS;
+  };
+
+  const blogPosts = getBlogsArray();
+
   const filteredPosts = blogPosts.filter(post => {
     const matchesCategory = selectedCategory === 'All' || post.category === selectedCategory;
-    const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         post.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         post.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+    const query = searchTerm.trim().toLowerCase();
+    const matchesSearch = !query || (
+      (post.title && post.title.toLowerCase().includes(query)) ||
+      (post.excerpt && post.excerpt.toLowerCase().includes(query)) ||
+      (Array.isArray(post.tags) && post.tags.some(tag => tag.toLowerCase().includes(query)))
+    );
     return matchesCategory && matchesSearch;
   });
 
@@ -186,12 +226,12 @@ const BlogsPage = () => {
 
   return (
     <div className="bg-white">
-      <Navbar/>
+      <Navbar />
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden bg-gradient-to-br from-emerald-50 to-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <motion.h1 
+            <motion.h1
               className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -199,13 +239,13 @@ const BlogsPage = () => {
             >
               Sports <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Insights</span>
             </motion.h1>
-            <motion.p 
+            <motion.p
               className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
             >
-              Expert articles, research insights, and practical tips on sports training, 
+              Expert articles, research insights, and practical tips on sports training,
               nutrition, mental conditioning, and athlete development.
             </motion.p>
           </div>
@@ -365,7 +405,7 @@ const BlogsPage = () => {
                 />
               </div>
             </div>
-            
+
             {/* Category Filter */}
             <div>
               <select
@@ -398,11 +438,10 @@ const BlogsPage = () => {
                   key={category.name}
                   onClick={() => setSelectedCategory(category.name)}
                   whileHover={{ y: -5, scale: 1.05 }}
-                  className={`p-4 rounded-2xl border-2 transition-all duration-300 text-center ${
-                    selectedCategory === category.name
+                  className={`p-4 rounded-2xl border-2 transition-all duration-300 text-center ${selectedCategory === category.name
                       ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
                       : 'border-gray-200 hover:border-emerald-300 hover:bg-gray-50'
-                  }`}
+                    }`}
                 >
                   <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-2">
                     <category.icon className="text-emerald-600 w-4 h-4" />
@@ -448,15 +487,15 @@ const BlogsPage = () => {
             >
               {currentPosts.map((post) => (
                 <motion.article
-                  key={post.id}
+                  key={post._id || post.id || post.slug || post.title}
                   variants={itemVariants}
                   whileHover={{ y: -10, scale: 1.02 }}
                   className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500"
                 >
                   <div className="h-48 overflow-hidden">
-                    <img 
-                      src={post.image} 
-                      alt={post.title} 
+                    <img
+                      src={post.images?.[0]?.url}
+                      alt={post.title}
                       className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                     />
                   </div>
@@ -472,12 +511,12 @@ const BlogsPage = () => {
                     </div>
                     <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">{post.title}</h3>
                     <p className="text-gray-600 mb-4 line-clamp-3">{post.excerpt}</p>
-                    
+
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center">
-                        <img 
-                          src={post.authorImage} 
-                          alt={post.author} 
+                        <img
+                          src={post.authorImage}
+                          alt={post.author}
                           className="w-8 h-8 rounded-full mr-3"
                         />
                         <div>
@@ -486,7 +525,7 @@ const BlogsPage = () => {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4 text-sm text-gray-500">
                         <div className="flex items-center">
@@ -498,7 +537,7 @@ const BlogsPage = () => {
                           {post.comments}
                         </div>
                       </div>
-                      
+
                       <motion.button
                         className="text-emerald-600 hover:text-emerald-700 font-medium flex items-center text-sm"
                         whileHover={{ x: 5 }}
@@ -537,37 +576,34 @@ const BlogsPage = () => {
               <button
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
-                className={`px-4 py-2 rounded-lg ${
-                  currentPage === 1 
-                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
+                className={`px-4 py-2 rounded-lg ${currentPage === 1
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                     : 'bg-white text-gray-700 hover:bg-emerald-100 hover:text-emerald-700 border border-gray-300'
-                }`}
+                  }`}
               >
                 Previous
               </button>
-              
+
               {[...Array(totalPages)].map((_, index) => (
                 <button
                   key={index + 1}
                   onClick={() => setCurrentPage(index + 1)}
-                  className={`px-4 py-2 rounded-lg ${
-                    currentPage === index + 1
+                  className={`px-4 py-2 rounded-lg ${currentPage === index + 1
                       ? 'bg-emerald-600 text-white'
                       : 'bg-white text-gray-700 hover:bg-emerald-100 hover:text-emerald-700 border border-gray-300'
-                  }`}
+                    }`}
                 >
                   {index + 1}
                 </button>
               ))}
-              
+
               <button
                 onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                 disabled={currentPage === totalPages}
-                className={`px-4 py-2 rounded-lg ${
-                  currentPage === totalPages 
-                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
+                className={`px-4 py-2 rounded-lg ${currentPage === totalPages
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                     : 'bg-white text-gray-700 hover:bg-emerald-100 hover:text-emerald-700 border border-gray-300'
-                }`}
+                  }`}
               >
                 Next
               </button>
@@ -575,7 +611,7 @@ const BlogsPage = () => {
           )}
         </div>
       </section>
-        
+
       {/* Newsletter Signup */}
       <section className="py-20 bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -590,10 +626,10 @@ const BlogsPage = () => {
               Stay Updated with Our Insights
             </h2>
             <p className="text-xl opacity-90 mb-8">
-              Subscribe to our newsletter and receive the latest articles, research, 
+              Subscribe to our newsletter and receive the latest articles, research,
               and expert tips directly in your inbox.
             </p>
-            
+
             <form className="flex flex-col sm:flex-row gap-4">
               <input
                 type="email"
@@ -610,14 +646,14 @@ const BlogsPage = () => {
                 Subscribe
               </motion.button>
             </form>
-            
+
             <p className="text-sm opacity-75 mt-4">
               We respect your privacy. Unsubscribe at any time.
             </p>
           </motion.div>
         </div>
       </section>
-      <Footer/>
+      <Footer />
     </div>
   );
 }

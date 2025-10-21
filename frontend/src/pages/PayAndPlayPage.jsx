@@ -2,86 +2,12 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, useAnimation, useInView, useScroll, useTransform } from 'framer-motion';
-import { Calendar, Users, Award, Trophy, Clock, MapPin, TrendingUp, Shield, Star, CheckCircle, Play, CreditCard, CalendarDays,ChevronRight } from 'lucide-react';
+import { Calendar, Users, Award, Trophy, Clock, MapPin, TrendingUp, Shield, Star, CheckCircle, Play, CreditCard, CalendarDays, ChevronRight, AlertCircle } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import useStore from '../stores';
 
-// Mock data for pay and play
-const facilities = [
-  {
-    id: 1,
-    name: "Cricket Nets",
-    description: "Professional cricket practice nets with bowling machines and video analysis.",
-    hourlyRate: 800,
-    dailyRate: 5000,
-    features: ["6 Turf Pitches", "Bowling Machines", "Video Analysis", "Changing Rooms", "Parking"],
-    availability: "6:00 AM - 10:00 PM",
-    image: "https://placehold.co/800x500/059669/white?text=Cricket+Nets",
-    capacity: "12 players per net",
-    bookingRequired: true
-  },
-  {
-    id: 2,
-    name: "Football Turf",
-    description: "FIFA-certified artificial turf perfect for matches and training sessions.",
-    hourlyRate: 1200,
-    dailyRate: 8000,
-    features: ["FIFA-Certified Turf", "Floodlights", "Goal Posts", "Changing Rooms", "Parking"],
-    availability: "6:00 AM - 10:00 PM",
-    image: "https://placehold.co/800x500/dc2626/white?text=Football+Turf",
-    capacity: "22 players",
-    bookingRequired: true
-  },
-  {
-    id: 3,
-    name: "Basketball Courts",
-    description: "Indoor basketball courts with professional-grade flooring and equipment.",
-    hourlyRate: 600,
-    dailyRate: 4000,
-    features: ["Wooden Flooring", "Professional Hoops", "Scoreboard", "Changing Rooms", "Parking"],
-    availability: "8:00 AM - 9:00 PM",
-    image: "https://placehold.co/800x500/7c3aed/white?text=Basketball+Courts",
-    capacity: "10 players per court",
-    bookingRequired: true
-  },
-  {
-    id: 4,
-    name: "Swimming Pool",
-    description: "Olympic-standard swimming pool available for individual and group sessions.",
-    hourlyRate: 500,
-    dailyRate: 3000,
-    features: ["50m Pool", "Lifeguards", "Changing Rooms", "Showers", "Parking"],
-    availability: "7:00 AM - 8:00 PM",
-    image: "https://placehold.co/800x500/0891b2/white?text=Swimming+Pool",
-    capacity: "30 swimmers",
-    bookingRequired: false
-  },
-  {
-    id: 5,
-    name: "Tennis Courts",
-    description: "Professional tennis courts with floodlights and ball machines.",
-    hourlyRate: 700,
-    dailyRate: 4500,
-    features: ["Clay Courts", "Floodlights", "Ball Machines", "Changing Rooms", "Parking"],
-    availability: "6:00 AM - 9:00 PM",
-    image: "https://placehold.co/800x500/f59e0b/white?text=Tennis+Courts",
-    capacity: "4 players per court",
-    bookingRequired: true
-  },
-  {
-    id: 6,
-    name: "Gymnasium",
-    description: "Fully equipped gym with modern fitness equipment and personal training options.",
-    hourlyRate: 300,
-    dailyRate: 2000,
-    features: ["Cardio Equipment", "Strength Training", "Free Weights", "Personal Trainers", "Changing Rooms"],
-    availability: "6:00 AM - 10:00 PM",
-    image: "https://placehold.co/800x500/10b981/white?text=Gymnasium",
-    capacity: "50 people",
-    bookingRequired: false
-  }
-];
-
+// Mock data for other sections (packages, bookingSteps, faqs remain the same)
 const packages = [
   {
     id: 1,
@@ -180,6 +106,26 @@ const PayAndPlayPage = () => {
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [activeFaq, setActiveFaq] = useState(null);
 
+  // Get venues data from Zustand store
+  const venues = useStore(state => state.venues);
+  const fetchVenues = useStore(state => state.fetchVenues);
+
+  useEffect(() => {
+    // defensive checks in case `venues` is undefined initially
+    const listLength = venues && Array.isArray(venues.list) ? venues.list.length : 0;
+    if (listLength === 0 && typeof fetchVenues === 'function') {
+      fetchVenues();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // run once on mount
+
+  // Fetch venues data on component mount
+  // useEffect(() => {
+  //   if (venues.list.length === 0) {
+  //     fetchVenues();
+  //   }
+  // }, [fetchVenues, venues.list.length]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setBookingForm(prev => ({ ...prev, [name]: value }));
@@ -249,6 +195,33 @@ const PayAndPlayPage = () => {
     visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: "easeOut" } }
   };
 
+  // Helper function to safely get venues array
+  const getVenuesArray = () => {
+    if (!venues) return [];
+    if (Array.isArray(venues.list)) return venues.list;
+    // some slices may have `data` or other shapes — try common alternatives
+    if (Array.isArray(venues.data)) return venues.data;
+    if (venues.list && Array.isArray(venues.list.data)) return venues.list.data;
+    return [];
+  };
+
+  // Transform venue data to match facility format
+  const transformVenueToFacility = (venue) => {
+    return {
+      id: venue.id || venue._id,
+      name: venue.name || "Facility Name",
+      description: venue.description || "Professional sports facility with modern amenities.",
+      hourlyRate: venue.hourlyRate || 500,
+      dailyRate: venue.dailyRate || 3000,
+      features: Array.isArray(venue.facilities) ? venue.facilities : (venue.facilities ? [venue.facilities] : ["Basic Facilities"]),
+      availability: venue.availability || "6:00 AM - 10:00 PM",
+      image: venue.images?.[0]?.url || "https://placehold.co/800x500/059669/white?text=Facility",
+      capacity: venue.capacity ? `${venue.capacity} people` : "20 people",
+      bookingRequired: venue.bookingRequired !== undefined ? venue.bookingRequired : true
+    };
+  };
+  const venuesArray = getVenuesArray();
+
   return (
     <div className="bg-white">
       <Navbar/>
@@ -277,62 +250,6 @@ const PayAndPlayPage = () => {
         </div>
       </section>
 
-      {/* Pay and Play Stats */}
-      {/* <section className="py-16 bg-gradient-to-br from-gray-50 via-white to-gray-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Why Choose Pay & Play?
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Flexible, affordable access to premium sports facilities
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={containerVariants}
-            className="grid grid-cols-2 md:grid-cols-4 gap-6"
-          >
-            {[
-              { number: 6, label: "Sports Facilities", icon: Users },
-              { number: 18, label: "Hours Daily", icon: Clock },
-              { number: 100, label: "Bookings Daily", icon: Calendar },
-              { number: 500, label: "Happy Players", icon: Award }
-            ].map((stat, index) => (
-              <motion.div
-                key={index}
-                variants={itemVariants}
-                whileHover={{ y: -10, scale: 1.05 }}
-                className="bg-white rounded-2xl p-6 shadow-lg text-center border border-gray-100 hover:border-emerald-200 transition-all duration-300"
-              >
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mx-auto mb-4">
-                  <stat.icon className="text-white w-6 h-6" />
-                </div>
-                <motion.div 
-                  className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2"
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true, margin: "-100px" }}
-                  transition={{ duration: 1, delay: index * 0.2 }}
-                >
-                  {stat.number}+
-                </motion.div>
-                <p className="text-gray-700 font-medium">{stat.label}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section> */}
-
       {/* Navigation Tabs */}
       <section className="py-12 bg-gradient-to-b from-white to-gray-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -357,99 +274,146 @@ const PayAndPlayPage = () => {
             ))}
           </div>
 
-          {/* Facilities Tab */}
+          {/* Facilities Tab - Now using venues from Zustand store */}
           {activeTab === 'facilities' && (
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              variants={containerVariants}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-            >
-              {facilities.map((facility) => (
+            <>
+              {/* Loading state */}
+              {venues && venues.loading && (
+                <div className="text-center py-12">
+                  <div className="w-8 h-8 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                  <p className="mt-4 text-gray-600">Loading our facilities...</p>
+                </div>
+              )}
+
+              {/* Error state */}
+              {venues && venues.error && !venues.loading && (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <AlertCircle className="w-8 h-8 text-red-600" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Failed to load facilities</h3>
+                  <p className="text-gray-600 mb-4">{venues.error}</p>
+                  <button
+                    onClick={() => fetchVenues && fetchVenues()}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium"
+                  >
+                    Try Again
+                  </button>
+                </div>
+              )}
+
+              {/* Facilities grid */}
+              {!venues?.loading && !venues?.error && (
                 <motion.div
-                  key={facility.id}
-                  variants={itemVariants}
-                  whileHover={{ y: -10, scale: 1.02 }}
-                  className="bg-white rounded-3xl overflow-hidden shadow-2xl hover:shadow-emerald-500/10 transition-all duration-500"
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, margin: "-100px" }}
+                  variants={containerVariants}
+                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
                 >
-                  <div className="h-48 overflow-hidden relative">
-                    <img 
-                      src={facility.image} 
-                      alt={facility.name} 
-                      className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
-                    />
-                    <div className="absolute top-4 right-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                        facility.bookingRequired ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
-                      }`}>
-                        {facility.bookingRequired ? 'Booking Required' : 'Walk-in Available'}
-                      </span>
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-6">
-                      <h3 className="text-xl font-bold text-white mb-1">{facility.name}</h3>
-                      <div className="flex items-center text-white/90 text-sm">
-                        <Clock className="w-4 h-4 mr-2" />
-                        {facility.availability}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-6">
-                    <p className="text-gray-600 mb-4">{facility.description}</p>
-                    
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                      <div className="flex items-center">
-                        <Users className="w-5 h-5 text-emerald-600 mr-2" />
-                        <span className="text-gray-700 text-sm">{facility.capacity}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <MapPin className="w-5 h-5 text-emerald-600 mr-2" />
-                        <span className="text-gray-700 text-sm truncate">Main Campus</span>
-                      </div>
-                    </div>
-                    
-                    <div className="mb-4">
-                      <h4 className="font-bold text-gray-900 mb-2">Pricing:</h4>
-                      <div className="space-y-1">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Hourly Rate:</span>
-                          <span className="font-bold text-emerald-600">₹{facility.hourlyRate}</span>
+                  {venuesArray.length > 0 && venuesArray.map((venue) => {
+                    const facility = transformVenueToFacility(venue);
+                    return (
+                      <motion.div
+                        key={facility.id}
+                        variants={itemVariants}
+                        whileHover={{ y: -10, scale: 1.02 }}
+                        className="bg-white rounded-3xl overflow-hidden shadow-2xl hover:shadow-emerald-500/10 transition-all duration-500"
+                      >
+                        <div className="h-48 overflow-hidden relative">
+                          <img 
+                            src={facility.image} 
+                            alt={facility.name} 
+                            onError={(e) => {
+                              e.target.src = "https://placehold.co/800x500/059669/white?text=Facility";
+                            }}
+                            className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
+                          />
+                          <div className="absolute top-4 right-4">
+                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                              facility.bookingRequired ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
+                            }`}>
+                              {facility.bookingRequired ? 'Booking Required' : 'Walk-in Available'}
+                            </span>
+                          </div>
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-6">
+                            <h3 className="text-xl font-bold text-white mb-1">{facility.name}</h3>
+                            <div className="flex items-center text-white/90 text-sm">
+                              <Clock className="w-4 h-4 mr-2" />
+                              {facility.availability}
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Daily Rate:</span>
-                          <span className="font-bold text-emerald-600">₹{facility.dailyRate}</span>
+                        <div className="p-6">
+                          <p className="text-gray-600 mb-4">{facility.description}</p>
+                          
+                          <div className="grid grid-cols-2 gap-4 mb-4">
+                            <div className="flex items-center">
+                              <Users className="w-5 h-5 text-emerald-600 mr-2" />
+                              <span className="text-gray-700 text-sm">{facility.capacity}</span>
+                            </div>
+                            <div className="flex items-center">
+                              <MapPin className="w-5 h-5 text-emerald-600 mr-2" />
+                              <span className="text-gray-700 text-sm truncate">Main Campus</span>
+                            </div>
+                          </div>
+                          
+                          <div className="mb-4">
+                            <h4 className="font-bold text-gray-900 mb-2">Pricing:</h4>
+                            <div className="space-y-1">
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">Hourly Rate:</span>
+                                <span className="font-bold text-emerald-600">₹{facility.hourlyRate}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">Daily Rate:</span>
+                                <span className="font-bold text-emerald-600">₹{facility.dailyRate}</span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="mb-4">
+                            <h4 className="font-bold text-gray-900 mb-2">Key Features:</h4>
+                            <div className="flex flex-wrap gap-1">
+                              {facility.features.slice(0, 3).map((feature, index) => (
+                                <span key={index} className="px-2 py-1 bg-emerald-100 text-emerald-800 text-xs rounded">
+                                  {feature}
+                                </span>
+                              ))}
+                              {facility.features.length > 3 && (
+                                <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
+                                  +{facility.features.length - 3} more
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <motion.button
+                            onClick={() => handleBookNow(facility)}
+                            className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-3 rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            Book Now
+                          </motion.button>
                         </div>
-                      </div>
-                    </div>
-                    
-                    <div className="mb-4">
-                      <h4 className="font-bold text-gray-900 mb-2">Key Features:</h4>
-                      <div className="flex flex-wrap gap-1">
-                        {facility.features.slice(0, 3).map((feature, index) => (
-                          <span key={index} className="px-2 py-1 bg-emerald-100 text-emerald-800 text-xs rounded">
-                            {feature}
-                          </span>
-                        ))}
-                        {facility.features.length > 3 && (
-                          <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
-                            +{facility.features.length - 3} more
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <motion.button
-                      onClick={() => handleBookNow(facility)}
-                      className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-3 rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      Book Now
-                    </motion.button>
-                  </div>
+                      </motion.div>
+                    );
+                  })}
                 </motion.div>
-              ))}
-            </motion.div>
+              )}
+
+              {/* Empty state */}
+              {!venues.loading && !venues.error && getVenuesArray().length === 0 && (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <MapPin className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No facilities available</h3>
+                  <p className="text-gray-600">We'll add our facilities soon.</p>
+                </div>
+              )}
+            </>
           )}
 
           {/* Packages Tab */}
@@ -831,4 +795,4 @@ const PayAndPlayPage = () => {
   );
 }
 
-export default PayAndPlayPage
+export default PayAndPlayPage;

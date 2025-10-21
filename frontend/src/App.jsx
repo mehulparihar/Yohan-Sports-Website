@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom"
+import { Route, Routes, Navigate } from "react-router-dom"
 import HomePage from "./pages/HomePage"
 import AboutPage from "./pages/AboutPage"
 import EventsPage from "./pages/EventsPage"
@@ -11,7 +11,17 @@ import InSchoolProgram from "./pages/InSchoolProgram"
 import ContactUs from "./pages/ContactUs"
 import LoginPage from "./pages/LoginPage"
 import DashboardPage from "./pages/DashboardPage"
+import useStore from "./stores"
+import {React, useEffect} from "react"
+
+
 function App() {
+
+  const {user} = useStore();
+
+  //  useEffect(() => {
+  //   checkAuth();
+  // }, [checkAuth]);
 
   return (
     <div>
@@ -27,10 +37,8 @@ function App() {
         <Route path = '/in-school-program' element = {<InSchoolProgram/>} />
         <Route path = '/contact' element = {<ContactUs/>} />
         <Route path = '/admin/login' element = {<LoginPage/>} />
-        <Route path = '/admin/dashboard' element = {<DashboardPage/>} />
+        <Route path = '/admin/dashboard' element = {!user ? <DashboardPage/> : <Navigate to = '/admin/login'/>} />
     
-
-        
       </Routes>
     </div>
   )

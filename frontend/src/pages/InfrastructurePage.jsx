@@ -79,7 +79,7 @@ const equipment = [
 const technology = [
   {
     id: 1,
-    name: "SportEdu Performance Platform",
+    name: "yohansports Performance Platform",
     description: "Proprietary software for tracking athlete progress, scheduling, and performance analytics.",
     features: ["Real-time Performance Tracking", "Personalized Training Plans", "Progress Visualization", "Coach-Athlete Communication"],
     image: "https://placehold.co/600x400/f59e0b/white?text=Performance+Platform"

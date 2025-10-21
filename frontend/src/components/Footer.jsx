@@ -16,7 +16,7 @@ function Footer() {
                 >
                   <Award className="text-white w-7 h-7" />
                 </motion.div>
-                <span className="ml-4 text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">SportEdu</span>
+                <span className="ml-4 text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">YohanSports</span>
               </div>
               <p className="text-gray-400 mb-8 max-w-md leading-relaxed">
                 Professional sports training programs for schools, colleges, and individuals. 
@@ -77,7 +77,7 @@ function Footer() {
                 </li>
                 <li className="flex items-center">
                   <Mail className="w-5 h-5 mr-4 flex-shrink-0" />
-                  <span className="text-lg">info@sportedu.com</span>
+                  <span className="text-lg">info@yohanSports.com</span>
                 </li>
               </ul>
             </div>
@@ -104,7 +104,7 @@ function Footer() {
           </div>
           
           <div className="border-t border-gray-800 mt-16 pt-8 text-center text-gray-500 text-lg">
-            <p>© {new Date().getFullYear()} SportEdu. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} YohanSports. All rights reserved.</p>
           </div>
         </div>
       </footer>

@@ -13,12 +13,21 @@ const EventSchema = new mongoose.Schema({
   description: String,
   startDate: { type: Date, index: true },
   endDate: Date,
+  date: { type: String }, // e.g. "June 15–17, 2024"
+  time: { type: String }, // e.g. "9:00 AM – 6:00 PM"
   venueId: { type: mongoose.Schema.Types.ObjectId, ref: 'Venue' },
+  location: { type: String },
   images: [ImageSubSchema],
+
   price: { type: Number, default: 0 },
   capacity: Number,
   enrolledCount: { type: Number, default: 0 },
+  participants: { type: String, default: "" }, // e.g. "500+"
   tags: [String],
+  category: { type: String, default: "" }, // e.g. "Tournament"
+  type: { type: String, default: "" }, // e.g. "featured"
+  highlights: { type: String, default: "" }, // e.g. "National-level competition..."
+  registrationOpen: { type: Boolean, default: true },
   organizer: { name: String, phone: String },
   isFeatured: { type: Boolean, default: false },
   metadata: mongoose.Schema.Types.Mixed

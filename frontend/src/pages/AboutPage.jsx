@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, useAnimation, useInView, useScroll, useTransform } from 'framer-motion';
-import { Users, GraduationCap, Award, Trophy, Target, Shield, Heart, TrendingUp, CheckCircle } from 'lucide-react';
+import { Users, GraduationCap, Award, Trophy, Target, Shield, Heart, TrendingUp, CheckCircle, AlertCircle } from 'lucide-react';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
+import useStore from '../stores';
 
-// Mock data
+// Mock data for other sections (stats, timeline, values remain the same)
 const stats = [
   { number: 150, label: "Schools Partnered", icon: GraduationCap, suffix: "+" },
   { number: 8500, label: "Students Trained", icon: Users, suffix: "+" },
@@ -18,7 +19,7 @@ const timeline = [
   {
     year: "2011",
     title: "Foundation",
-    description: "SportEdu founded with mission to revolutionize sports education"
+    description: "Yohan Sports founded with mission to revolutionize sports education"
   },
   {
     year: "2015",
@@ -34,37 +35,6 @@ const timeline = [
     year: "2023",
     title: "Milestone",
     description: "8500+ students trained, 42 national champions"
-  }
-];
-
-const team = [
-  {
-    id: 1,
-    name: "Dr. Rajesh Kumar",
-    role: "Founder & CEO",
-    qualifications: "PhD Sports Science, Former National Coach",
-    image: "https://placehold.co/400x400/059669/white?text=RK"
-  },
-  {
-    id: 2,
-    name: "Priya Sharma",
-    role: "Director of Operations",
-    qualifications: "MBA, Sports Management Expert",
-    image: "https://placehold.co/400x400/dc2626/white?text=PS"
-  },
-  {
-    id: 3,
-    name: "Vikram Singh",
-    role: "Head of Coaching",
-    qualifications: "International Level Coach, Sports Psychology",
-    image: "https://placehold.co/400x400/7c3aed/white?text=VS"
-  },
-  {
-    id: 4,
-    name: "Ananya Patel",
-    role: "Academy Director",
-    qualifications: "Former Olympian, Certified Trainer",
-    image: "https://placehold.co/400x400/0891b2/white?text=AP"
   }
 ];
 
@@ -92,13 +62,24 @@ const values = [
 ];
 
 export default function AboutUsPage() {
-    const [isScrolled, setIsScrolled] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const statsRef = useRef(null);
+
+  // Get coaches data from Zustand store
+  const { coaches, fetchCoaches } = useStore();
+
+  // Fetch coaches data on component mount
+  useEffect(() => {
+    // Only fetch if we haven't fetched before or if there's an error
+    if (!coaches.list || coaches.list.length === 0) {
+      fetchCoaches();
+    }
+  }, [fetchCoaches, coaches.list]);
 
   // Stats counter animation
   const statsControls = useAnimation();
   const statsRefInView = useInView(statsRef, { once: true, margin: "-100px" });
-  
+
   useEffect(() => {
     if (statsRefInView) {
       statsControls.start({
@@ -112,11 +93,11 @@ export default function AboutUsPage() {
   // Custom hook for number counter animation
   const useCounter = (end, duration = 2000) => {
     const [count, setCount] = useState(0);
-    
+
     useEffect(() => {
       let start = 0;
       const increment = end / (duration / 16);
-      
+
       const timer = setInterval(() => {
         start += increment;
         if (start >= end) {
@@ -126,10 +107,10 @@ export default function AboutUsPage() {
           setCount(Math.ceil(start));
         }
       }, 16);
-      
+
       return () => clearInterval(timer);
     }, [end, duration]);
-    
+
     return count;
   };
 
@@ -171,14 +152,17 @@ export default function AboutUsPage() {
     visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: "easeOut" } }
   };
 
+
+
+
   return (
     <div className="bg-white">
-      <Navbar/>
+      <Navbar />
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden bg-gradient-to-br from-emerald-50 to-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <motion.h1 
+            <motion.h1
               className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -186,13 +170,13 @@ export default function AboutUsPage() {
             >
               Our <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Story</span>
             </motion.h1>
-            <motion.p 
+            <motion.p
               className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
             >
-              Since 2011, we've been transforming lives through sports education, 
+              Since 2011, we've been transforming lives through sports education,
               creating champions both on and off the field.
             </motion.p>
           </div>
@@ -209,7 +193,7 @@ export default function AboutUsPage() {
             transition={{ duration: 0.8 }}
             className="text-center mb-20"
           >
-            <motion.h2 
+            <motion.h2
               className="text-4xl md:text-5xl font-bold text-gray-900 mb-6"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -218,7 +202,7 @@ export default function AboutUsPage() {
             >
               Our Impact in Numbers
             </motion.h2>
-            <motion.p 
+            <motion.p
               className="text-xl text-gray-600 max-w-3xl mx-auto"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -250,7 +234,7 @@ export default function AboutUsPage() {
                   <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mx-auto mb-8 shadow-lg">
                     <stat.icon className="text-white w-8 h-8" />
                   </div>
-                  <motion.div 
+                  <motion.div
                     className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-3"
                     initial={{ opacity: 0, scale: 0.5 }}
                     whileInView={{ opacity: 1, scale: 1 }}
@@ -281,15 +265,15 @@ export default function AboutUsPage() {
                 Our <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Mission</span>
               </h2>
               <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-                To revolutionize sports education by providing world-class training programs 
-                that develop not just athletes, but well-rounded individuals with strong 
+                To revolutionize sports education by providing world-class training programs
+                that develop not just athletes, but well-rounded individuals with strong
                 character, discipline, and leadership skills.
               </p>
               <p className="text-lg text-gray-600 mb-10 leading-relaxed">
-                We believe that sports have the power to transform lives, build communities, 
+                We believe that sports have the power to transform lives, build communities,
                 and create opportunities that extend far beyond the playing field.
               </p>
-              
+
               <div className="space-y-6">
                 <div className="flex items-start">
                   <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center mr-4 mt-1">
@@ -320,7 +304,7 @@ export default function AboutUsPage() {
                 </div>
               </div>
             </motion.div>
-            
+
             <motion.div
               initial="hidden"
               whileInView="visible"
@@ -331,7 +315,7 @@ export default function AboutUsPage() {
               <div className="bg-gray-200 border-2 border-dashed rounded-2xl w-full h-96" />
             </motion.div>
           </div>
-          
+
           {/* Vision */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -344,8 +328,8 @@ export default function AboutUsPage() {
               Our <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Vision</span>
             </h3>
             <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
-              To be the most trusted and impactful sports education provider in the country, 
-              recognized for developing champions who excel in their sport and make positive 
+              To be the most trusted and impactful sports education provider in the country,
+              recognized for developing champions who excel in their sport and make positive
               contributions to society.
             </p>
           </motion.div>
@@ -367,7 +351,7 @@ export default function AboutUsPage() {
               From humble beginnings to becoming a leader in sports education
             </p>
           </motion.div>
-          
+
           <div className="relative max-w-4xl mx-auto">
             <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-white/30"></div>
             <div className="space-y-16">
@@ -401,7 +385,7 @@ export default function AboutUsPage() {
         </div>
       </section>
 
-      {/* Leadership Team */}
+      {/* Leadership Team - Now using coaches from Zustand store */}
       <section className="py-28 bg-gradient-to-b from-gray-50 to-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -411,56 +395,137 @@ export default function AboutUsPage() {
             variants={containerVariants}
             className="text-center mb-20"
           >
-            <motion.h2 
+            <motion.h2
               variants={itemVariants}
               className="text-4xl md:text-5xl font-bold text-gray-900 mb-6"
             >
-              Meet Our Leadership Team
+              Meet Our Expert Coaches
             </motion.h2>
-            <motion.p 
+            <motion.p
               variants={itemVariants}
               className="text-xl text-gray-600 max-w-3xl mx-auto"
             >
-              Experienced professionals dedicated to excellence in sports education
+              Certified professionals with championship experience
             </motion.p>
           </motion.div>
 
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={containerVariants}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
-          >
-            {team.map((member, index) => (
-              <motion.div
-                key={member.id}
-                variants={itemVariants}
-                whileHover={{ y: -15, scale: 1.03 }}
-                className="bg-white rounded-3xl overflow-hidden shadow-2xl hover:shadow-emerald-500/10 transition-all duration-500 group"
+          {/* Loading state */}
+          {coaches.loading && (
+            <div className="text-center py-12">
+              <div className="w-8 h-8 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading our expert coaches...</p>
+            </div>
+          )}
+
+          {/* Error state */}
+          {coaches.error && !coaches.loading && (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertCircle className="w-8 h-8 text-red-600" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Failed to load coaches</h3>
+              <p className="text-gray-600 mb-4">{coaches.error}</p>
+              <button
+                onClick={() => fetchCoaches()}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium"
               >
-                <div className="h-80 bg-gray-200 relative overflow-hidden">
-                  <img 
-                    src={member.image} 
-                    alt={member.name} 
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  <motion.div 
-                    className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6"
-                    whileHover={{ opacity: 1 }}
-                  >
-                    <div className="text-white">
-                      <p className="font-bold text-xl mb-1">{member.name}</p>
-                      <p className="text-sm opacity-90">{member.role}</p>
+                Try Again
+              </button>
+            </div>
+          )}
+
+          {/* Coaches grid - with proper array checking */}
+          {!coaches.loading && !coaches.error && (
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              variants={containerVariants}
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
+            >
+              {/* {coaches.list.map((coach, index) => (
+                <motion.div
+                  key={coach.id || index}
+                  variants={itemVariants}
+                  whileHover={{ y: -15, scale: 1.03 }}
+                  className="bg-white rounded-3xl overflow-hidden shadow-2xl hover:shadow-emerald-500/10 transition-all duration-500 group"
+                >
+                  <div className="h-80 bg-gray-200 relative overflow-hidden">
+                    <img
+                      src={coach.images?.[0].url || "https://placehold.co/400x400/059669/white?text=Coach"}
+                      alt={coach.name || "Coach"}
+                      onError={(e) => {
+                        e.target.src = "https://placehold.co/400x400/059669/white?text=Coach";
+                      }}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6"
+                      whileHover={{ opacity: 1 }}
+                    >
+                      <div className="text-white">
+                        <p className="font-bold text-xl mb-1">{coach.name || "Coach Name"}</p>
+                        <p className="text-sm opacity-90">{coach.role || "Coach Role"}</p>
+                      </div>
+                    </motion.div>
+                  </div>
+                  <div className="p-6">
+                    <p className="text-gray-600 text-sm">
+                      {coach.qualifications || (coach.specialties && Array.isArray(coach.specialties) ? coach.specialties.join(', ') : 'Certified Coach')}
+                      
+                    </p>
+                  </div>
+                </motion.div>
+              ))} */}
+              {coaches.list.map((coach, index) => (
+                <motion.div
+                  key={coach._id || coach.id || `${coach.name || 'coach'}-${idx}`}
+                  variants={itemVariants}
+                  whileHover={{ y: -15, scale: 1.03 }}
+                  className="bg-white rounded-3xl overflow-hidden shadow-2xl hover:shadow-emerald-500/10 transition-all duration-500 group"
+                >
+                  <div className="h-80 bg-gray-200 relative overflow-hidden">
+                    <img
+                      src={coach.images?.[0]?.url}
+                      alt={coach.name}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6"
+                      whileHover={{ opacity: 1 }}
+                    >
+                      <div className="text-white">
+                        <p className="font-bold text-xl mb-1">{coach.name}</p>
+                        <p className="text-sm opacity-90 mb-2">{coach.role}</p>
+                        <p className="text-xs opacity-75">{coach.experience}</p>
+                      </div>
+                    </motion.div>
+                  </div>
+                  <div className="p-6">
+                    <p className="text-gray-600 text-sm mb-4">{coach.qualifications}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {coach.specialties?.map((specialty, i) => (
+                        <span key={i} className="bg-emerald-100 text-emerald-800 text-xs px-3 py-1 rounded-full font-medium">
+                          {specialty}
+                        </span>
+                      ))}
                     </div>
-                  </motion.div>
-                </div>
-                <div className="p-6">
-                  <p className="text-gray-600 text-sm">{member.qualifications}</p>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+
+          {/* Empty state */}
+          {!coaches.loading && !coaches.error && coaches.length === 0 && (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Users className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No coaches available</h3>
+              <p className="text-gray-600">We'll add our expert coaches soon.</p>
+            </div>
+          )}
         </div>
       </section>
 
@@ -474,13 +539,13 @@ export default function AboutUsPage() {
             variants={containerVariants}
             className="text-center mb-20"
           >
-            <motion.h2 
+            <motion.h2
               variants={itemVariants}
               className="text-4xl md:text-5xl font-bold text-gray-900 mb-6"
             >
               Our Core Values
             </motion.h2>
-            <motion.p 
+            <motion.p
               variants={itemVariants}
               className="text-xl text-gray-600 max-w-3xl mx-auto"
             >
@@ -512,7 +577,7 @@ export default function AboutUsPage() {
           </motion.div>
         </div>
       </section>
-      <Footer/>
+      <Footer />
     </div>
   );
 }
