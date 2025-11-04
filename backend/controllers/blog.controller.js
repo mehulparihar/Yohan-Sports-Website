@@ -11,10 +11,10 @@ export const createBlog = async (req, res) => {
         // thumbnail upload
         if (req.files?.thumbnail?.[0]) {
             const buf = req.files.thumbnail[0].buffer;
-            const publicId = `${process.env.CLOUDINARY_FOLDER || "sports-gurukul"}/blogs/${payload.slug}/thumb-${Date.now()}`;
+            const publicId = `${process.env.CLOUDINARY_FOLDER || "yohan-sports"}/blogs/${payload.slug}/thumb-${Date.now()}`;
             const result = await uploadBufferToCloudinary(buf, {
                 public_id: publicId,
-                folder: `${process.env.CLOUDINARY_FOLDER || "sports-gurukul"}/blogs/${payload.slug}`,
+                folder: `${process.env.CLOUDINARY_FOLDER || "yohan-sports"}/blogs/${payload.slug}`,
                 resource_type: "image",
                 transformation: [{ quality: "auto" }, { fetch_format: "auto" }],
             });
@@ -26,10 +26,10 @@ export const createBlog = async (req, res) => {
         if (req.files?.images?.length) {
             for (const file of req.files.images) {
                 const buf = file.buffer;
-                const publicId = `${process.env.CLOUDINARY_FOLDER || "sports-gurukul"}/blogs/${payload.slug}/img-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+                const publicId = `${process.env.CLOUDINARY_FOLDER || "yohan-sports"}/blogs/${payload.slug}/img-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
                 const result = await uploadBufferToCloudinary(buf, {
                     public_id: publicId,
-                    folder: `${process.env.CLOUDINARY_FOLDER || "sports-gurukul"}/blogs/${payload.slug}`,
+                    folder: `${process.env.CLOUDINARY_FOLDER || "yohan-sports"}/blogs/${payload.slug}`,
                     resource_type: "image",
                     transformation: [{ quality: "auto" }, { fetch_format: "auto" }],
                 });

@@ -5,7 +5,6 @@ import upload from "../middleware/upload.js";
 
 const router = express.Router();
 
-// Routes
 router.post("/",protectRoute, adminRoute , upload.fields([{ name: 'images', maxCount: 10 }]),createBlog);
 router.put("/:id",protectRoute, adminRoute, updateBlog);
 router.delete("/:id",protectRoute, adminRoute,deleteBlog);

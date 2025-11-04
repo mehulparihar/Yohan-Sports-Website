@@ -5,14 +5,14 @@ export const createCoach = async (req, res) => {
     try {
         const payload = req.body;
         payload.createdBy = req.user.id;
-        console.log(req.files); 
+    
         if (!req.body.name) return res.status(400).json({ error: 'name required' });
         if (req.files?.avatar?.[0]) {
             const buf = req.files.avatar[0].buffer;
-            const publicId = `${process.env.CLOUDINARY_FOLDER || 'sports-gurukul'}/coaches/${payload.name.replace(/\s+/g, '-').toLowerCase()}/avatar-${Date.now()}`;
+            const publicId = `${process.env.CLOUDINARY_FOLDER || 'yohan-sports'}/coaches/${payload.name.replace(/\s+/g, '-').toLowerCase()}/avatar-${Date.now()}`;
             const r = await uploadBufferToCloudinary(buf, {
                 public_id: publicId,
-                folder: `${process.env.CLOUDINARY_FOLDER || 'sports-gurukul'}/coaches/${payload.name.replace(/\s+/g, '-').toLowerCase()}`,
+                folder: `${process.env.CLOUDINARY_FOLDER || 'yohan-sports'}/coaches/${payload.name.replace(/\s+/g, '-').toLowerCase()}`,
                 resource_type: 'image',
                 transformation: [{ width: 600, height: 600, crop: 'limit' }, { quality: 'auto' }, { fetch_format: 'auto' }]
             });
@@ -24,10 +24,10 @@ export const createCoach = async (req, res) => {
         if (req.files?.images?.length) {
             for (const file of req.files.images) {
                 const buf = file.buffer;
-                const publicId = `${process.env.CLOUDINARY_FOLDER || 'sports-gurukul'}/coaches/${payload.name.replace(/\s+/g, '-').toLowerCase()}/img-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+                const publicId = `${process.env.CLOUDINARY_FOLDER || 'yohan-sports'}/coaches/${payload.name.replace(/\s+/g, '-').toLowerCase()}/img-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
                 const r = await uploadBufferToCloudinary(buf, {
                     public_id: publicId,
-                    folder: `${process.env.CLOUDINARY_FOLDER || 'sports-gurukul'}/coaches/${payload.name.replace(/\s+/g, '-').toLowerCase()}`,
+                    folder: `${process.env.CLOUDINARY_FOLDER || 'yohan-sports'}/coaches/${payload.name.replace(/\s+/g, '-').toLowerCase()}`,
                     resource_type: 'image',
                     transformation: [{ quality: 'auto' }, { fetch_format: 'auto' }]
                 });
@@ -40,7 +40,6 @@ export const createCoach = async (req, res) => {
         await coach.save();
         res.status(201).json({ data: coach });
     } catch (err) {
-        console.log(err);
         res.status(500).json({ message: err.message });
     }
 };
@@ -75,7 +74,6 @@ export const deleteCoach = async (req, res) => {
 
 export const allCoach = async (req, res) => {
     try {
-        console.log("called");
         const coaches = await Coach.find({}).sort({ name: 1 });
         res.json({ data: coaches });
     } catch (err) {

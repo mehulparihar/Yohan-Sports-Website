@@ -3,10 +3,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, useAnimation, useInView, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import Lenis from '@studio-freight/lenis';
-import { ChevronDown, Send, AlertCircle, Calendar, Users, GraduationCap, Award, Star, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Youtube, Linkedin, Trophy, Target, Shield, Heart, Play, CheckCircle, Clock, TrendingUp } from 'lucide-react';
+import { Zap, FileText, BookOpen, ChevronLeft, ChevronRight, ArrowRight, ChevronDown, Send, AlertCircle, Calendar, Users, GraduationCap, Award, Star, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Youtube, Linkedin, Trophy, Target, Shield, Heart, Play, CheckCircle, Clock, TrendingUp } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import useStore from '../stores';
+import { Link } from 'react-router-dom';
 
 // Mock data
 const MOCK_PROGRAMS = [
@@ -225,7 +226,81 @@ export default function SportsLandingPage() {
   const successRef = useRef(null);
   const impactRef = useRef(null);
   const contactRef = useRef(null);
+
   const { programs, fetchPrograms, coaches, fetchCoaches, createEnquiry } = useStore();
+
+
+  const [currentCoachSlide, setCurrentCoachSlide] = useState(0)
+  const [coachesPerSlide, setCoachesPerSlide] = useState(4)
+  const [hoveredId, setHoveredId] = useState(null)
+
+  const exploreSections = [
+    {
+      id: "programs",
+      title: "Training Programs",
+      description: "Customized programs for all levels",
+      icon: Zap,
+      color: "from-emerald-400 to-teal-500",
+      bgColor: "bg-emerald-50",
+      borderColor: "border-emerald-200",
+      count: "15+",
+      label: "Programs",
+      link: "/in-school-program",
+    },
+    {
+      id: "events",
+      title: "Live Events",
+      description: "Connect with coaches and athletes",
+      icon: Users,
+      color: "from-green-400 to-emerald-500",
+      bgColor: "bg-green-50",
+      borderColor: "border-green-200",
+      count: "12",
+      label: "This Month",
+      link: "/events",
+    },
+    {
+      id: "blogs",
+      title: "Resources & Blogs",
+      description: "Expert tips and training guides",
+      icon: FileText,
+      color: "from-teal-400 to-cyan-500",
+      bgColor: "bg-teal-50",
+      borderColor: "border-teal-200",
+      count: "50+",
+      label: "Articles",
+      link: "/blogs",
+    },
+    {
+      id: "enroll",
+      title: "Enroll Now",
+      description: "Start your transformation today",
+      icon: BookOpen,
+      color: "from-lime-400 to-green-500",
+      bgColor: "bg-lime-50",
+      borderColor: "border-lime-200",
+      count: "100%",
+      label: "Satisfaction",
+      link: "/contact",
+    },
+  ]
+  useEffect(() => {
+    const updateCoachesPerSlide = () => {
+      if (window.innerWidth < 640) {
+        setCoachesPerSlide(1) // Mobile: 1 coach
+      } else if (window.innerWidth < 768) {
+        setCoachesPerSlide(2) // Small tablet: 2 coaches
+      } else if (window.innerWidth < 1024) {
+        setCoachesPerSlide(3) // Tablet: 3 coaches
+      } else {
+        setCoachesPerSlide(4) // Desktop: 4 coaches
+      }
+    }
+
+    updateCoachesPerSlide()
+    window.addEventListener("resize", updateCoachesPerSlide)
+    return () => window.removeEventListener("resize", updateCoachesPerSlide)
+  }, [])
   // Auto-rotate testimonials
   useEffect(() => {
     const interval = setInterval(() => {
@@ -567,133 +642,191 @@ export default function SportsLandingPage() {
       {/* Header */}
       <Navbar />
 
+    
       {/* Explore Section */}
-      <section ref={exploreRef} className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden min-h-screen flex items-center">
+       <section
+      ref={exploreRef}
+      className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden min-h-screen flex items-center"
+    >
+      {/* Animated Background */}
+      <motion.div
+        className="absolute inset-0 -z-10 overflow-hidden"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+      >
         <motion.div
-          className="absolute inset-0 z-0"
-          style={{ y: heroY, scale: heroScale }}
-        >
-          <div className="absolute top-0 right-0 w-2/3 h-full bg-gradient-to-l from-emerald-500/10 to-transparent"></div>
-          <div className="absolute bottom-0 left-0 w-2/3 h-full bg-gradient-to-r from-emerald-500/10 to-transparent"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-gradient-to-r from-emerald-400/20 to-teal-400/20 blur-3xl"></div>
-        </motion.div>
+          className="absolute top-0 right-0 w-96 h-96 rounded-full bg-gradient-to-br from-emerald-400/20 to-teal-400/20 blur-3xl"
+          animate={{ y: [0, 50, 0], scale: [1, 1.2, 1] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-gradient-to-tr from-green-300/20 to-emerald-400/20 blur-3xl"
+          animate={{ y: [0, -60, 0], scale: [1, 1.3, 1] }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+        />
+      </motion.div>
 
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: { staggerChildren: 0.15, delayChildren: 0.2 },
+            },
+          }}
+          className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center"
+        >
+          {/* Left Content */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
+            variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0 } }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="max-w-4xl mx-auto text-center"
+            className="space-y-8"
           >
-            <motion.h1
-              className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-            >
-              Where Champions Are <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Made</span>
-            </motion.h1>
-            <motion.p
-              className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
-            >
-              Transform your athletic potential with professional training programs
-              designed for schools, colleges, and individuals. Join 8500+ athletes who've achieved greatness.
-            </motion.p>
+            <div className="space-y-4">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+              >
+                <span className="px-4 py-2 bg-gradient-to-r from-emerald-100 to-lime-100 border border-emerald-300 rounded-full text-sm font-semibold text-emerald-700 shadow-sm backdrop-blur-sm">
+                  🌿 Transform Your Game
+                </span>
+              </motion.div>
+
+              <motion.h1
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                className="text-5xl md:text-7xl font-black tracking-tight leading-tight"
+              >
+                <span className="block text-slate-900 mb-2">Train Beyond</span>
+                <motion.span
+                  className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-teal-500 to-green-600"
+                  animate={{ backgroundPosition: ["0% center", "100% center", "0% center"] }}
+                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  Limits
+                </motion.span>
+              </motion.h1>
+
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.1 }}
+                className="text-lg text-slate-600 max-w-lg leading-relaxed"
+              >
+                Experience world-class athletic programs, personalized by expert coaches to help you push boundaries
+                and achieve greatness—powered by focus, discipline, and innovation.
+              </motion.p>
+            </div>
+
+            {/* Buttons */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
-              className="flex flex-col sm:flex-row justify-center gap-6"
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="flex flex-col sm:flex-row gap-4 pt-4"
             >
-              <motion.button
-                onClick={() => scrollToSection('programs', programsRef)}
-                className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-10 py-5 rounded-full font-medium text-lg transition-all duration-300 shadow-2xl hover:shadow-emerald-500/25"
-                whileHover={{ scale: 1.05, y: -5 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Explore Programs
-              </motion.button>
-              <motion.button
-                onClick={() => setShowModal(true)}
-                className="bg-white hover:bg-gray-50 text-emerald-600 border-2 border-emerald-600 px-10 py-5 rounded-full font-medium text-lg transition-all duration-300 shadow-xl hover:shadow-lg"
-                whileHover={{ scale: 1.05, y: -5 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Book a Trial
-              </motion.button>
+              <Link to="/train-the-trainers">
+                <motion.button
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="group relative px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl text-lg overflow-hidden shadow-lg hover:shadow-emerald-400/40 transition-all duration-300"
+                >
+                  <span className="relative z-10 flex items-center justify-center gap-2">
+                    Start Training
+                    <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
+                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                </motion.button>
+              </Link>
+
+              <Link to="/contact">
+                <motion.button
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="px-8 py-4 bg-white border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 font-bold rounded-xl text-lg transition-all duration-300 shadow-sm"
+                >
+                  Book a Trial
+                </motion.button>
+              </Link>
             </motion.div>
           </motion.div>
 
+          {/* Right Cards */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.8, ease: "easeOut" }}
-            className="mt-20 flex justify-center"
+            variants={{ hidden: { opacity: 0, x: 50 }, visible: { opacity: 1, x: 0 } }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="relative"
           >
-            <div className="relative">
-              <motion.div
-                className="w-72 h-72 md:w-96 md:h-96 rounded-full bg-gradient-to-br from-emerald-500/20 to-teal-600/20 flex items-center justify-center backdrop-blur-sm border border-emerald-500/30"
-                animate={{
-                  rotate: [0, 360],
-                }}
-                transition={{
-                  duration: 25,
-                  repeat: Infinity,
-                  ease: "linear"
-                }}
-              >
-                <motion.div
-                  className="w-60 h-60 md:w-80 md:h-80 rounded-full bg-gradient-to-br from-emerald-500/30 to-teal-600/30 flex items-center justify-center backdrop-blur-sm border border-emerald-500/40"
-                  animate={{
-                    scale: [1, 1.1, 1],
-                  }}
-                  transition={{
-                    duration: 4,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                >
-                  <div className="w-48 h-48 md:w-64 md:h-64 rounded-full bg-gradient-to-br from-emerald-500/40 to-teal-600/40 flex items-center justify-center backdrop-blur-sm border border-emerald-500/50">
-                    <Award className="text-emerald-600 w-20 h-20 md:w-24 md:h-24 drop-shadow-lg" />
-                  </div>
-                </motion.div>
-              </motion.div>
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-emerald-50 via-teal-50/40 to-green-50/30 border border-emerald-200/50 backdrop-blur-xl shadow-inner"></div>
 
-              {/* Floating stats */}
-              <motion.div
-                className="absolute -top-6 -right-6 bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg"
-                {...floatAnimation}
-              >
-                42+ Champions
-              </motion.div>
-              <motion.div
-                className="absolute -bottom-6 -left-6 bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg"
-                {...floatAnimation}
-                transition={{ ...floatAnimation.animate.transition, delay: 1 }}
-              >
-                150+ Schools
-              </motion.div>
+            <div className="relative z-10 grid grid-cols-2 gap-4 lg:gap-6">
+              {exploreSections.map((section, i) => {
+                const Icon = section.icon
+                return (
+                  <Link to={section.link} key={section.id}>
+                    <motion.div
+                      initial={{ opacity: 0, y: 30 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: i * 0.1 }}
+                      whileHover={{ y: -8, scale: 1.02 }}
+                      className={`group relative p-6 rounded-2xl border-2 ${section.borderColor} ${section.bgColor} overflow-hidden shadow-md hover:shadow-emerald-200/50 transition-all duration-500 cursor-pointer`}
+                    >
+                      {/* Hover gradient shimmer */}
+                      <motion.div
+                        className={`absolute inset-0 bg-gradient-to-br ${section.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500`}
+                      />
+                      <motion.div
+                        className="absolute -inset-[200%] bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100"
+                        animate={{ x: ["-200%", "200%"] }}
+                        transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+                      />
+
+                      <div className="relative z-10 space-y-4 flex flex-col justify-between h-full">
+                        <div>
+                          <motion.div
+                            whileHover={{ rotate: 12, scale: 1.1 }}
+                            className={`inline-block p-3 rounded-lg bg-gradient-to-br ${section.color} text-white mb-3`}
+                          >
+                            <Icon size={24} />
+                          </motion.div>
+                          <h3 className="text-slate-900 font-bold text-lg mb-1">{section.title}</h3>
+                          <p className="text-slate-600 text-sm leading-relaxed">{section.description}</p>
+                        </div>
+
+                        <div className="flex items-end justify-between pt-2 border-t border-slate-200 group-hover:border-emerald-300 transition-all duration-300">
+                          <span className={`text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r ${section.color}`}>
+                            {section.count}
+                          </span>
+                          <span className="text-xs text-slate-500 font-semibold uppercase tracking-wide">
+                            {section.label}
+                          </span>
+                        </div>
+                      </div>
+
+                      <motion.div
+                        className="absolute top-4 right-4 text-slate-400 group-hover:text-emerald-600 transition-all duration-500"
+                        animate={{ x: [0, 4, 0] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                      >
+                        <ArrowRight size={20} />
+                      </motion.div>
+                    </motion.div>
+                  </Link>
+                )
+              })}
             </div>
           </motion.div>
-        </div>
-
-        <motion.div
-          className="absolute bottom-12 left-1/2 transform -translate-x-1/2"
-          animate={{
-            y: [0, 15, 0],
-          }}
-          transition={{
-            duration: 2.5,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        >
-          <ChevronDown className="w-8 h-8 text-gray-600" />
         </motion.div>
-      </section>
+      </div>
+    </section>
+
 
       {/* Stats Section */}
       <section ref={statsRef} className="py-24 bg-gradient-to-br from-gray-50 via-white to-gray-50 relative overflow-hidden">
@@ -909,7 +1042,7 @@ export default function SportsLandingPage() {
       </section>
 
       {/* Programs Section */}
-      <section ref={programsRef} className="py-28 bg-gradient-to-b from-white to-gray-50">
+      {/* <section ref={programsRef} className="py-28 bg-gradient-to-b from-white to-gray-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial="hidden"
@@ -981,6 +1114,90 @@ export default function SportsLandingPage() {
               </motion.div>
             ))}
 
+          </motion.div>
+        </div>
+      </section> */}
+
+      <section ref={programsRef} className="py-28 bg-gradient-to-b from-white to-gray-50 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-teal-500/5"></div>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={containerVariants}
+            className="max-w-6xl mx-auto"
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+              {/* Left side - Introduction */}
+              <motion.div variants={slideInLeft} className="space-y-6">
+                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight">
+                  Our Training{" "}
+                  <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                    Programs
+                  </span>
+                </h2>
+                <p className="text-xl text-gray-600 leading-relaxed">
+                  We offer comprehensive training programs across multiple sports disciplines including{" "}
+                  <span className="font-semibold text-emerald-600">Football</span>,{" "}
+                  <span className="font-semibold text-emerald-600">Basketball</span>,{" "}
+                  <span className="font-semibold text-emerald-600">Cricket</span>,{" "}
+                  <span className="font-semibold text-emerald-600">Swimming</span>, and many more.
+                </p>
+                <p className="text-lg text-gray-600 leading-relaxed">
+                  Each program is designed by certified professionals to help athletes of all levels achieve their
+                  goals. Whether you're a beginner looking to learn the fundamentals or an advanced player aiming for
+                  competitive excellence, we have the perfect program for you.
+                </p>
+                <div className="flex flex-wrap gap-3 pt-4">
+                  {["Football", "Basketball", "Cricket", "Swimming", "Tennis", "Athletics"].map((sport, index) => (
+                    <motion.span
+                      key={sport}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: index * 0.1 }}
+                      className="bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800 px-4 py-2 rounded-full font-medium text-sm border border-emerald-200"
+                    >
+                      {sport}
+                    </motion.span>
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Right side - Button */}
+              <motion.div variants={slideInRight} className="flex justify-center lg:justify-end">
+                <motion.a
+                  href="/programs"
+                  className="group relative inline-flex items-center gap-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-12 py-6 rounded-2xl font-bold text-xl transition-all duration-300 shadow-2xl hover:shadow-emerald-500/30"
+                  whileHover={{ scale: 1.05, y: -5 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <span>View All Programs</span>
+                  <motion.div
+                    animate={{ x: [0, 5, 0] }}
+                    transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+                  >
+                    <ArrowRight className="w-6 h-6" />
+                  </motion.div>
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-white/0 via-white/20 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                </motion.a>
+              </motion.div>
+            </div>
+
+            {/* Decorative elements */}
+            <motion.div
+              className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-r from-emerald-400/20 to-teal-400/20 rounded-full blur-3xl"
+              animate={{
+                scale: [1, 1.2, 1],
+                opacity: [0.3, 0.5, 0.3],
+              }}
+              transition={{
+                duration: 8,
+                repeat: Number.POSITIVE_INFINITY,
+                ease: "easeInOut",
+              }}
+            />
           </motion.div>
         </div>
       </section>
@@ -1192,7 +1409,7 @@ export default function SportsLandingPage() {
       )}
 
       {/* Coaches Section */}
-      <section ref={coachesRef} className="py-28 bg-gradient-to-b from-gray-50 to-white">
+      {/* <section ref={coachesRef} className="py-28 bg-gradient-to-b from-gray-50 to-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial="hidden"
@@ -1259,6 +1476,158 @@ export default function SportsLandingPage() {
               </motion.div>
             ))}
           </motion.div>
+        </div>
+      </section> */}
+
+      <section ref={coachesRef} className="py-28 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-r from-emerald-400/10 to-teal-400/10 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={containerVariants}
+            className="text-center mb-20"
+          >
+            <motion.h2 variants={itemVariants} className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              Meet Our{" "}
+              <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                Expert Coaches
+              </span>
+            </motion.h2>
+            <motion.p variants={itemVariants} className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Certified professionals with championship experience and passion for developing athletes
+            </motion.p>
+          </motion.div>
+
+          {/* Coaches Carousel */}
+          <div className="relative">
+            <div className="overflow-hidden px-4 sm:px-8 md:px-12 lg:px-16 p-6">
+              <motion.div
+                className="flex gap-4 sm:gap-6"
+                animate={{
+                  x: `-${currentCoachSlide * (100 / coachesPerSlide)}%`,
+                }}
+                transition={{
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 30,
+                }}
+              >
+                {coachesArray.map((coach) => (
+                  <motion.div
+                    key={coach._id || coach.id || `${coach.name || 'coach'}-${idx}`}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    whileHover={{ y: -10 }}
+                    className="bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 group flex-shrink-0 border border-gray-100"
+                    style={{
+                      width: `calc(${100 / coachesPerSlide}% - ${((coachesPerSlide - 1) * 1.5) / coachesPerSlide}rem)`,
+                    }}
+                  >
+                    <div className="relative h-80 overflow-hidden">
+                      <motion.img
+                        src={coach.images?.[0]?.url || "/placeholder.svg"}
+                        alt={coach.name}
+                        className="w-full h-full object-cover"
+                        whileHover={{ scale: 1.1 }}
+                        transition={{ duration: 0.6 }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                      {/* Hover overlay content */}
+                      <motion.div
+                        className="absolute inset-0 flex flex-col justify-end p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                        initial={{ y: 20 }}
+                        whileHover={{ y: 0 }}
+                      >
+                        <div className="text-white">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Award className="w-5 h-5 text-emerald-400" />
+                            <span className="text-sm font-medium text-emerald-400">{coach.experience}</span>
+                          </div>
+                          <h3 className="text-2xl font-bold mb-1">{coach.name}</h3>
+                          <p className="text-sm opacity-90">{coach.role}</p>
+                        </div>
+                      </motion.div>
+                    </div>
+
+                    <div className="p-6">
+                      <h3 className="text-xl font-bold text-gray-900 mb-2">{coach.name}</h3>
+                      <p className="text-emerald-600 font-medium mb-3">{coach.role}</p>
+                      <p className="text-gray-600 text-sm mb-4 leading-relaxed">{coach.qualifications}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {coach.specialties?.map((specialty, i) => (
+                          <span
+                            key={i}
+                            className="bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 text-xs px-3 py-1.5 rounded-full font-medium border border-emerald-200"
+                          >
+                            {specialty}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </div>
+
+            {coachesArray.length > coachesPerSlide && (
+              <>
+                <motion.button
+                  onClick={() => setCurrentCoachSlide(Math.max(0, currentCoachSlide - 1))}
+                  disabled={currentCoachSlide === 0}
+                  className="absolute -left-4 sm:-left-6 lg:-left-8 top-1/2 -translate-y-1/2 bg-white hover:bg-gradient-to-r hover:from-emerald-600 hover:to-teal-600 text-emerald-600 hover:text-white p-3 sm:p-4 rounded-full shadow-2xl disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 z-20 border-2 border-emerald-600 disabled:border-gray-300 disabled:text-gray-300 disabled:hover:bg-white"
+                  whileHover={{ scale: currentCoachSlide === 0 ? 1 : 1.15 }}
+                  whileTap={{ scale: currentCoachSlide === 0 ? 1 : 0.9 }}
+                  aria-label="Previous coaches"
+                >
+                  <ChevronLeft className="w-6 h-6 sm:w-7 sm:h-7" strokeWidth={3} />
+                </motion.button>
+
+                <motion.button
+                  onClick={() =>
+                    setCurrentCoachSlide(
+                      Math.min(Math.ceil(coachesArray.length / coachesPerSlide) - 1, currentCoachSlide + 1),
+                    )
+                  }
+                  disabled={currentCoachSlide >= Math.ceil(coachesArray.length / coachesPerSlide) - 1}
+                  className="absolute -right-4 sm:-right-6 lg:-right-8 top-1/2 -translate-y-1/2 bg-white hover:bg-gradient-to-r hover:from-emerald-600 hover:to-teal-600 text-emerald-600 hover:text-white p-3 sm:p-4 rounded-full shadow-2xl disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 z-20 border-2 border-emerald-600 disabled:border-gray-300 disabled:text-gray-300 disabled:hover:bg-white"
+                  whileHover={{
+                    scale: currentCoachSlide >= Math.ceil(coachesArray.length / coachesPerSlide) - 1 ? 1 : 1.15,
+                  }}
+                  whileTap={{
+                    scale: currentCoachSlide >= Math.ceil(coachesArray.length / coachesPerSlide) - 1 ? 1 : 0.9,
+                  }}
+                  aria-label="Next coaches"
+                >
+                  <ChevronRight className="w-6 h-6 sm:w-7 sm:h-7" strokeWidth={3} />
+                </motion.button>
+
+                {/* Slide Indicators */}
+                <div className="flex justify-center mt-12 space-x-3">
+                  {Array.from({ length: Math.ceil(coachesArray.length / coachesPerSlide) }).map((_, index) => (
+                    <motion.button
+                      key={index}
+                      onClick={() => setCurrentCoachSlide(index)}
+                      className={`h-3 rounded-full transition-all duration-300 ${index === currentCoachSlide
+                          ? "bg-gradient-to-r from-emerald-600 to-teal-600 w-12"
+                          : "bg-gray-300 hover:bg-gray-400 w-3"
+                        }`}
+                      whileHover={{ scale: 1.2 }}
+                      whileTap={{ scale: 0.9 }}
+                      aria-label={`Go to slide ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </section>
 

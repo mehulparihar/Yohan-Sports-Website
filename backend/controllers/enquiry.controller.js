@@ -31,7 +31,7 @@ export const createEnquiry = async (req, res) => {
 };
 
 export const allEnquiry = async (req, res) => {
-    console.log('Fetching all enquiries with query:', req.query);
+   
     try {
         const q = {};
         if (req.query.status) q.status = req.query.status;

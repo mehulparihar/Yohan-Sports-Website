@@ -50,7 +50,6 @@ export const createProgram = async (req, res) => {
 
 export const updateProgram = async (req, res) => {
     try {
-        console.log('Received updateProgram payload:', req.body);
         const program = await Program.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!program) return res.status(404).json({ error: 'Program not found' });
         res.json({ data: program });

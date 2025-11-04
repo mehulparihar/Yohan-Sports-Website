@@ -8,7 +8,7 @@ export const createEvent = async (req, res) => {
     try {
         
         const payload = req.body;
-        console.log('Received createEvent payload:', payload);
+    
         if (!payload.title) return res.status(400).json({ error: 'title required' });
 
         payload.createdBy = req.user.id;

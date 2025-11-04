@@ -147,11 +147,17 @@ const BlogsPage = () => {
     const hasArray = Array.isArray(list) && list.length > 0;
     // handle possible wrapper shapes (list.data)
     const wrapped = list && list.data && Array.isArray(list.data) && list.data.length > 0;
-    if (!hasArray && !wrapped) {
+    if (!hasArray) {
       fetchBlogs();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+ 
+
+ 
+
+
 
 
   const getBlogsArray = () => {
@@ -514,11 +520,11 @@ const BlogsPage = () => {
 
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center">
-                        <img
-                          src={post.authorImage}
+                        {/* <img
+                          src={post.authorImage ? post.authorImage : 'https://placehold.co/400x400/6b7280/white?text=Author'}
                           alt={post.author}
                           className="w-8 h-8 rounded-full mr-3"
-                        />
+                        /> */}
                         <div>
                           <p className="text-sm font-medium text-gray-900">{post.author}</p>
                           <p className="text-xs text-gray-500">{post.date}</p>

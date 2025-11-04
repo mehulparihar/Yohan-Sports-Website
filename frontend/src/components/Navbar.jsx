@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Award } from "lucide-react";
 import Lenis from "@studio-freight/lenis";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 function Navbar({ theme = "dark", onProgramSelect = () => { } }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -19,6 +19,9 @@ function Navbar({ theme = "dark", onProgramSelect = () => { } }) {
   const impactRef = useRef(null);
   const contactRef = useRef(null);
 
+  const lenisRef = useRef(null); // store Lenis instance so we can call it later
+  const location = useLocation(); // react-router location
+
   useEffect(() => {
     const lenis = new Lenis({
       duration: 1.2,
@@ -31,6 +34,8 @@ function Navbar({ theme = "dark", onProgramSelect = () => { } }) {
       touchMultiplier: 2,
       infinite: false,
     });
+
+    lenisRef.current = lenis;
 
     function raf(time) {
       lenis.raf(time);
@@ -75,11 +80,58 @@ function Navbar({ theme = "dark", onProgramSelect = () => { } }) {
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
+      // destroy Lenis if it exposes a destroy method (defensive)
+      try {
+        if (lenisRef.current && typeof lenisRef.current.destroy === "function") {
+          lenisRef.current.destroy();
+        }
+      } catch (e) {
+        // ignore
+      }
+      lenisRef.current = null;
     };
   }, []);
 
+  // Scroll to top when the route changes
+  useEffect(() => {
+    // small delay can help if route change causes layout shifts
+    const scrollToTop = () => {
+      if (lenisRef.current && typeof lenisRef.current.scrollTo === "function") {
+        try {
+          // Lenis scrollTo accepts a number (y) or an element; use 0 for top
+          lenisRef.current.scrollTo(0, { immediate: false });
+          return;
+        } catch (e) {
+          // fall through to window scroll
+        }
+      }
+      // fallback
+      window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    };
+
+    // Use a tiny timeout to allow route rendering/UI paint before scrolling
+    const id = setTimeout(scrollToTop, 20);
+    // Also ensure mobile menu closes on navigation
+    setMobileMenuOpen(false);
+
+    return () => clearTimeout(id);
+  }, [location]);
+
   const scrollToSection = (sectionId, ref) => {
     setMobileMenuOpen(false);
+    // if lenis available, use it for smooth scroll; otherwise use native
+    if (lenisRef.current && typeof lenisRef.current.scrollTo === "function") {
+      try {
+        // If you want to scroll to the element's offset top:
+        if (ref?.current) {
+          const top = ref.current.offsetTop;
+          lenisRef.current.scrollTo(top);
+          return;
+        }
+      } catch (e) {
+        // fallback to native
+      }
+    }
     ref.current?.scrollIntoView({ behavior: "smooth" });
   };
 
@@ -98,7 +150,8 @@ function Navbar({ theme = "dark", onProgramSelect = () => { } }) {
               whileTap={{ scale: 0.95 }}
               className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg"
             >
-              <Award className="text-white w-6 h-6" />
+              <img src="/1000305631.jpg" alt="My Logo" className="h-12 w-auto rounded-full" />
+              {/* <Award className="text-white w-6 h-6" /> */}
             </motion.div>
             <span className="ml-3 text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
               Yohan Sports
@@ -114,6 +167,16 @@ function Navbar({ theme = "dark", onProgramSelect = () => { } }) {
                   ? "text-emerald-600 font-bold"
                   : "text-gray-700 hover:text-emerald-600"
                 }`}
+              onClick={() => {
+                // ensure top scroll on same-page link
+                if (location.pathname === "/") {
+                  if (lenisRef.current && typeof lenisRef.current.scrollTo === "function") {
+                    lenisRef.current.scrollTo(0);
+                  } else {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }
+                }
+              }}
             >
               Home
             </Link>
@@ -165,12 +228,12 @@ function Navbar({ theme = "dark", onProgramSelect = () => { } }) {
                   >
                     Pay and Play
                   </Link>
-                  <Link
+                  {/* <Link
                     to="/infrastructure"
                     className="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-emerald-600 text-sm"
                   >
                     Infrastructure
-                  </Link>
+                  </Link> */}
                 </div>
               </div>
             </div>
@@ -207,7 +270,7 @@ function Navbar({ theme = "dark", onProgramSelect = () => { } }) {
                   >
                     In-School Physical Education
                   </Link>
-                  <Link
+                  {/* <Link
                     to="/train-the-trainers"
                     className="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-emerald-600 text-sm"
                   >
@@ -218,7 +281,7 @@ function Navbar({ theme = "dark", onProgramSelect = () => { } }) {
                     className="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-emerald-600 text-sm"
                   >
                     Pay and Play
-                  </Link>
+                  </Link> */}
                 </div>
               </div>
             </div>
@@ -242,7 +305,7 @@ function Navbar({ theme = "dark", onProgramSelect = () => { } }) {
             >
               Blogs
             </Link>
-            <Link
+            {/* <Link
               to="/testimonials"
               className={`text-sm font-medium ${activeSection === "testimonials"
                   ? "text-emerald-600 font-bold"
@@ -250,7 +313,7 @@ function Navbar({ theme = "dark", onProgramSelect = () => { } }) {
                 }`}
             >
               Testimonials
-            </Link>
+            </Link> */}
           </nav>
 
           <Link to="/contact" className="hidden md:inline-block">
@@ -281,12 +344,19 @@ function Navbar({ theme = "dark", onProgramSelect = () => { } }) {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="md:hidden mt-4 pb-4"
+              className="md:hidden mt-4 pb-4 bg-white/95 backdrop-blur-xl rounded-2xl shadow-lg border border-gray-100"
             >
               <div className="flex flex-col space-y-3">
                 <Link
                   to="/"
-                  onClick={() => setMobileMenuOpen(false)}
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    if (lenisRef.current && typeof lenisRef.current.scrollTo === "function") {
+                      lenisRef.current.scrollTo(0);
+                    } else {
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }
+                  }}
                   className="text-left py-3 px-4 rounded-xl font-medium text-gray-700 hover:bg-gray-100"
                 >
                   Home

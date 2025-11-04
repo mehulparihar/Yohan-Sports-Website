@@ -19,9 +19,6 @@ function App() {
 
   const {user} = useStore();
 
-  //  useEffect(() => {
-  //   checkAuth();
-  // }, [checkAuth]);
 
   return (
     <div>
@@ -37,7 +34,7 @@ function App() {
         <Route path = '/in-school-program' element = {<InSchoolProgram/>} />
         <Route path = '/contact' element = {<ContactUs/>} />
         <Route path = '/admin/login' element = {<LoginPage/>} />
-        <Route path = '/admin/dashboard' element = {!user ? <DashboardPage/> : <Navigate to = '/admin/login'/>} />
+        <Route path = '/admin/dashboard' element = {user?.role === "admin" ? <DashboardPage/> : <Navigate to = '/admin/login'/>} />
     
       </Routes>
     </div>
