@@ -9,32 +9,32 @@ import useStore from '../stores';
 
 // Mock data for other sections (stats, timeline, values remain the same)
 const stats = [
-  { number: 150, label: "Schools Partnered", icon: GraduationCap, suffix: "+" },
-  { number: 8500, label: "Students Trained", icon: Users, suffix: "+" },
-  { number: 42, label: "National Champions", icon: Trophy, suffix: "+" },
-  { number: 12, label: "Years Experience", icon: Award, suffix: "+" }
+  { number: 12, label: "Schools Partnered", icon: GraduationCap, suffix: "+" },
+  { number: 300, label: "Students Trained", icon: Users, suffix: "+" },
+  { number: 25, label: "National Champions", icon: Trophy, suffix: "+" },
+  { number: 5, label: "Years Experience", icon: Award, suffix: "+" }
 ];
 
 const timeline = [
   {
-    year: "2011",
+    year: "2024",
     title: "Foundation",
     description: "Yohan Sports founded with mission to revolutionize sports education"
   },
   {
-    year: "2015",
+    year: "2024",
     title: "First Championship",
     description: "First national championship win with partner school"
   },
   {
-    year: "2018",
+    year: "2025",
     title: "Expansion",
-    description: "Expanded to 50+ schools across the region"
+    description: "Expanded to 12+ schools across the region"
   },
   {
-    year: "2023",
+    year: "2025",
     title: "Milestone",
-    description: "8500+ students trained, 42 national champions"
+    description: "300+ students trained, 25+ national champions"
   }
 ];
 
@@ -312,7 +312,12 @@ export default function AboutUsPage() {
               variants={slideInRight}
               className="relative"
             >
-              <div className="bg-gray-200 border-2 border-dashed rounded-2xl w-full h-96" />
+        
+              <img
+                src="1000331337.jpg"
+                alt="Preview"
+                className="bg-gray-200 border-2 rounded-2xl w-full h-96 object-cover"
+              />
             </motion.div>
           </div>
 
@@ -443,40 +448,7 @@ export default function AboutUsPage() {
               variants={containerVariants}
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
             >
-              {/* {coaches.list.map((coach, index) => (
-                <motion.div
-                  key={coach.id || index}
-                  variants={itemVariants}
-                  whileHover={{ y: -15, scale: 1.03 }}
-                  className="bg-white rounded-3xl overflow-hidden shadow-2xl hover:shadow-emerald-500/10 transition-all duration-500 group"
-                >
-                  <div className="h-80 bg-gray-200 relative overflow-hidden">
-                    <img
-                      src={coach.images?.[0].url || "https://placehold.co/400x400/059669/white?text=Coach"}
-                      alt={coach.name || "Coach"}
-                      onError={(e) => {
-                        e.target.src = "https://placehold.co/400x400/059669/white?text=Coach";
-                      }}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    />
-                    <motion.div
-                      className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6"
-                      whileHover={{ opacity: 1 }}
-                    >
-                      <div className="text-white">
-                        <p className="font-bold text-xl mb-1">{coach.name || "Coach Name"}</p>
-                        <p className="text-sm opacity-90">{coach.role || "Coach Role"}</p>
-                      </div>
-                    </motion.div>
-                  </div>
-                  <div className="p-6">
-                    <p className="text-gray-600 text-sm">
-                      {coach.qualifications || (coach.specialties && Array.isArray(coach.specialties) ? coach.specialties.join(', ') : 'Certified Coach')}
-                      
-                    </p>
-                  </div>
-                </motion.div>
-              ))} */}
+              
               {coaches.list.map((coach, index) => (
                 <motion.div
                   key={coach._id || coach.id || `${coach.name || 'coach'}-${idx}`}

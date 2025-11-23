@@ -10,8 +10,8 @@ import useStore from '../stores';
 // Mock data
 const contactInfo = {
   address: "123 Sports Avenue, Athletic City, AC 12345",
-  phone: "(123) 456-7890",
-  email: "info@yohansports.com",
+  phone: "+91 93263 81578",
+  email: "yohansports.india@gmail.com",
   hours: [
     { day: "Monday - Friday", time: "8:00 AM - 8:00 PM" },
     { day: "Saturday", time: "9:00 AM - 6:00 PM" },
@@ -222,7 +222,7 @@ const ContactUs = () => {
             className="max-w-4xl mx-auto"
           >
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              <h2 className="tinfo@yohansports.comext-3xl md:text-4xl font-bold text-gray-900 mb-4">
                 Send Us a Message
               </h2>
               <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -420,11 +420,9 @@ const ContactUs = () => {
             transition={{ duration: 0.8 }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Meet Our Team
-            </h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Contact Information</h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Connect with our leadership team directly
+              Reach out to us directly through your preferred channel
             </p>
           </motion.div>
 
@@ -433,36 +431,45 @@ const ContactUs = () => {
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
             variants={containerVariants}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
+            className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl mx-auto"
           >
-            {teamMembers.map((member, index) => (
-              <motion.div
-                key={member.id}
-                variants={itemVariants}
-                whileHover={{ y: -10, scale: 1.03 }}
-                className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:border-emerald-200 transition-all duration-500 text-center"
+            {/* Email Card */}
+            <motion.div
+              variants={itemVariants}
+              whileHover={{ y: -10, scale: 1.03 }}
+              className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:border-emerald-200 transition-all duration-500 text-center"
+            >
+              <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Mail className="text-white w-8 h-8" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Email</h3>
+              <p className="text-gray-600 mb-4">Send us your inquiry</p>
+              <a
+                href={`mailto:${contactInfo.email}`}
+                className="text-xl font-semibold text-emerald-600 hover:text-emerald-700 transition-colors duration-300"
               >
-                <div className="w-24 h-24 mx-auto mb-4 overflow-hidden rounded-full">
-                  <img 
-                    src={member.image} 
-                    alt={member.name} 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-1">{member.name}</h3>
-                <p className="text-emerald-600 font-medium mb-3">{member.role}</p>
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center justify-center text-gray-600">
-                    <Mail className="w-4 h-4 mr-2" />
-                    <span>{member.email}</span>
-                  </div>
-                  <div className="flex items-center justify-center text-gray-600">
-                    <Phone className="w-4 h-4 mr-2" />
-                    <span>{member.phone}</span>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+                {contactInfo.email}
+              </a>
+            </motion.div>
+
+            {/* Phone Card */}
+            <motion.div
+              variants={itemVariants}
+              whileHover={{ y: -10, scale: 1.03 }}
+              className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:border-emerald-200 transition-all duration-500 text-center"
+            >
+              <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Phone className="text-white w-8 h-8" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Phone</h3>
+              <p className="text-gray-600 mb-4">Call us during business hours</p>
+              <a
+                href={`tel:${contactInfo.phone}`}
+                className="text-xl font-semibold text-emerald-600 hover:text-emerald-700 transition-colors duration-300"
+              >
+                {contactInfo.phone}
+              </a>
+            </motion.div>
           </motion.div>
         </div>
       </section>
@@ -533,7 +540,7 @@ const ContactUs = () => {
       </section>
 
       {/* Location Map Placeholder */}
-      <section className="py-20 bg-gradient-to-br from-gray-50 to-white">
+      {/* <section className="py-20 bg-gradient-to-br from-gray-50 to-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -564,7 +571,7 @@ const ContactUs = () => {
             </div>
           </motion.div>
         </div>
-      </section>
+      </section> */}
       <Footer/>
     </div>
   );

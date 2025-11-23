@@ -12,6 +12,7 @@ import ContactUs from "./pages/ContactUs"
 import LoginPage from "./pages/LoginPage"
 import DashboardPage from "./pages/DashboardPage"
 import useStore from "./stores"
+import BlogPage from "./pages/BlogPage"
 import {React, useEffect} from "react"
 
 
@@ -31,11 +32,11 @@ function App() {
         <Route path = '/train-the-trainers' element = {<TrainTheTrainersPage/>} />
         <Route path = '/infrastructure' element = {<InfrastructurePage/>} />
         <Route path = '/pay-and-play' element = {<PayAndPlayPage/>} />
+        <Route path = '/blogs/:slug' element={<BlogPage/>} />
         <Route path = '/in-school-program' element = {<InSchoolProgram/>} />
         <Route path = '/contact' element = {<ContactUs/>} />
         <Route path = '/admin/login' element = {<LoginPage/>} />
         <Route path = '/admin/dashboard' element = {user?.role === "admin" ? <DashboardPage/> : <Navigate to = '/admin/login'/>} />
-    
       </Routes>
     </div>
   )

@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from 'framer-motion';
 import { Award, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Youtube, Linkedin} from 'lucide-react';
+import { Link } from "react-router-dom";
 
 function Footer() {
     return (
@@ -20,7 +21,7 @@ function Footer() {
               </div>
               <p className="text-gray-400 mb-8 max-w-md leading-relaxed">
                 Professional sports training programs for schools, colleges, and individuals. 
-                Certified coaches, proven curriculum, and measurable results since 2011.
+                Certified coaches, proven curriculum, and measurable results since 2024.
               </p>
               <div className="flex space-x-6">
                 {[Facebook, Twitter, Instagram, Youtube, Linkedin].map((Icon, index) => (
@@ -40,44 +41,40 @@ function Footer() {
             <div>
               <h3 className="text-xl font-bold mb-8 text-emerald-400">Quick Links</h3>
               <ul className="space-y-4">
-                {['Explore', 'About', 'Programs', 'Coaches', 'Success', 'Contact'].map((item) => (
-                  <motion.li key={item} whileHover={{ x: 5 }}>
-                    <button
-                      onClick={() => scrollToSection(
-                        item === 'Explore' ? 'explore' : 
-                        item === 'About' ? 'about' :
-                        item === 'Programs' ? 'programs' :
-                        item === 'Coaches' ? 'coaches' :
-                        item === 'Success' ? 'success' : 'contact',
-                        item === 'Explore' ? exploreRef : 
-                        item === 'About' ? aboutRef :
-                        item === 'Programs' ? programsRef :
-                        item === 'Coaches' ? coachesRef :
-                        item === 'Success' ? successRef : contactRef
-                      )}
-                      className="text-gray-400 hover:text-emerald-400 transition-colors duration-300 text-lg"
-                    >
-                      {item}
-                    </button>
-                  </motion.li>
-                ))}
-              </ul>
+              {[
+                { name: "Home", path: "/" },
+                { name: "About", path: "/about" },
+                { name: "Programs", path: "/in-school-program" },
+                { name: "Events", path: "/events" },
+                { name: "Blogs", path: "/blogs" },
+                { name: "Contact", path: "/contact" },
+              ].map((item) => (
+                <motion.li key={item.name} whileHover={{ x: 5 }}>
+                  <Link
+                    to={item.path}
+                    className="text-gray-400 hover:text-emerald-400 transition-colors duration-300 text-lg"
+                  >
+                    {item.name}
+                  </Link>
+                </motion.li>
+              ))}
+            </ul>
             </div>
             
             <div>
               <h3 className="text-xl font-bold mb-8 text-emerald-400">Contact Us</h3>
               <ul className="space-y-4 text-gray-400">
-                <li className="flex items-start">
+                {/* <li className="flex items-start">
                   <MapPin className="w-5 h-5 mr-4 mt-1 flex-shrink-0" />
                   <span className="text-lg">123 Sports Avenue, Athletic City, AC 12345</span>
-                </li>
+                </li> */}
                 <li className="flex items-center">
                   <Phone className="w-5 h-5 mr-4 flex-shrink-0" />
-                  <span className="text-lg">(123) 456-7890</span>
+                  <span className="text-lg">+91 93263 81578</span>
                 </li>
                 <li className="flex items-center">
                   <Mail className="w-5 h-5 mr-4 flex-shrink-0" />
-                  <span className="text-lg">info@yohanSports.com</span>
+                  <span className="text-lg">yohansports.india@gmail.com</span>
                 </li>
               </ul>
             </div>

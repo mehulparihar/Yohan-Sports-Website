@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, useAnimation, useInView, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import Lenis from '@studio-freight/lenis';
 import { Zap, FileText, BookOpen, ChevronLeft, ChevronRight, ArrowRight, ChevronDown, Send, AlertCircle, Calendar, Users, GraduationCap, Award, Star, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Youtube, Linkedin, Trophy, Target, Shield, Heart, Play, CheckCircle, Clock, TrendingUp } from 'lucide-react';
@@ -91,44 +91,42 @@ const MOCK_COACHES = [
 const testimonials = [
   {
     id: 1,
-    quote: "Our school's cricket team won the state championship after joining Yohan Sports!",
-    author: "Principal Davis",
-    school: "Lincoln High School",
-    logo: "https://placehold.co/100x40/059669/white?text=LHS",
+    quote: "Our Football team won the state championship after joining Yohan Sports!",
+    // author: "Individual Program",
+    school: "Individual Program",
+    // logo: "https://placehold.co/100x40/059669/white?text=LHS",
     rating: 5
   },
   {
     id: 2,
     quote: "The football program transformed our college's athletic department completely.",
-    author: "Coach Martinez",
-    school: "State University",
-    logo: "https://placehold.co/100x40/dc2626/white?text=SU",
+    // author: "Coach Martinez",
+    // school: "State University",
+    // logo: "https://placehold.co/100x40/dc2626/white?text=SU",
     rating: 5
   },
   {
     id: 3,
     quote: "My daughter qualified for nationals after just 6 months of training!",
     author: "Parent Review",
-    school: "Individual Program",
-    logo: "https://placehold.co/100x40/7c3aed/white?text=IP",
+    // school: "Individual Program",
+    // logo: "https://placehold.co/100x40/7c3aed/white?text=IP",
     rating: 5
   }
 ];
 
 const gallery = [
-  "https://placehold.co/600x400/059669/white?text=Champions+1",
-  "https://placehold.co/600x400/dc2626/white?text=Champions+2",
-  "https://placehold.co/600x400/7c3aed/white?text=Training+3",
-  "https://placehold.co/600x400/0891b2/white?text=Training+4",
-  // "https://placehold.co/600x400/f59e0b/white?text=Event+5",
-  // "https://placehold.co/600x400/10b981/white?text=Tournament+6"
+  "1000331337.jpg",
+  "1000331344.jpg",
+  "1000331338.jpg",
+  "1000331339.jpg",
 ];
 
 const stats = [
-  { number: 150, label: "Schools Partnered", icon: GraduationCap, suffix: "+" },
-  { number: 8500, label: "Students Trained", icon: Users, suffix: "+" },
-  { number: 42, label: "National Champions", icon: Trophy, suffix: "+" },
-  { number: 12, label: "Years Experience", icon: Award, suffix: "+" }
+  { number: 12, label: "Schools Partnered", icon: GraduationCap, suffix: "+" },
+  { number: 300, label: "Students Trained", icon: Users, suffix: "+" },
+  { number: 25, label: "National Champions", icon: Trophy, suffix: "+" },
+  { number: 5, label: "Years Experience", icon: Award, suffix: "+" }
 ];
 
 const whyChooseUs = [
@@ -152,34 +150,35 @@ const whyChooseUs = [
   },
   {
     icon: TrendingUp,
-    title: "Modern Facilities",
-    description: "State-of-the-art training facilities with the latest equipment.",
+    title: "School-Based Training Programs",
+    description: "Training is conducted directly at partner schools for convenient and consistent coaching.",
     stats: "50,000 sq ft"
   }
 ];
 
 const timeline = [
   {
-    year: "2011",
+    year: "20124",
     title: "Foundation",
     description: "Yohan Sports founded with mission to revolutionize sports education"
   },
   {
-    year: "2015",
+    year: "2024",
     title: "First Championship",
     description: "First national championship win with partner school"
   },
   {
-    year: "2018",
+    year: "2025",
     title: "Expansion",
-    description: "Expanded to 50+ schools across the region"
+    description: "Expanded to 12+ schools across the region"
   },
   {
-    year: "2023",
+    year: "2025",
     title: "Milestone",
-    description: "8500+ students trained, 42 national champions"
+    description: "300+ students trained, 15+ national champions"
   }
 ];
+
 const normalizeArray = (obj) => {
   if (!obj) return [];
   // if array already
@@ -193,6 +192,57 @@ const normalizeArray = (obj) => {
   return [];
 };
 
+const exploreSections = [
+  {
+    id: "programs",
+    title: "Training Programs",
+    description: "Customized programs for all levels",
+    icon: Zap,
+    color: "from-emerald-400 to-teal-500",
+    bgColor: "bg-emerald-50",
+    borderColor: "border-emerald-200",
+    count: "15+",
+    label: "Programs",
+    link: "/in-school-program",
+  },
+  {
+    id: "events",
+    title: "Live Events",
+    description: "Connect with coaches and athletes",
+    icon: Users,
+    color: "from-green-400 to-emerald-500",
+    bgColor: "bg-green-50",
+    borderColor: "border-green-200",
+    count: "12",
+    label: "This Month",
+    link: "/events",
+  },
+  {
+    id: "blogs",
+    title: "Resources & Blogs",
+    description: "Expert tips and training guides",
+    icon: FileText,
+    color: "from-teal-400 to-cyan-500",
+    bgColor: "bg-teal-50",
+    borderColor: "border-teal-200",
+    count: "50+",
+    label: "Articles",
+    link: "/blogs",
+  },
+  {
+    id: "enroll",
+    title: "Enroll Now",
+    description: "Start your transformation today",
+    icon: BookOpen,
+    color: "from-lime-400 to-green-500",
+    bgColor: "bg-lime-50",
+    borderColor: "border-lime-200",
+    count: "100%",
+    label: "Satisfaction",
+    link: "/contact",
+  },
+]
+
 export default function SportsLandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('explore');
@@ -203,6 +253,25 @@ export default function SportsLandingPage() {
   const [loadingCoaches, setLoadingCoaches] = useState(false);
   const [showEnrollmentModal, setShowEnrollmentModal] = useState(false);
   const [formStatus, setFormStatus] = useState('idle');
+  const [formSubmitted, setFormSubmitted] = useState(false);
+  const [currentTestimonial, setCurrentTestimonial] = useState(0);
+  const { programs, fetchPrograms, coaches, fetchCoaches, createEnquiry } = useStore();
+  const [currentCoachSlide, setCurrentCoachSlide] = useState(0)
+  const [coachesPerSlide, setCoachesPerSlide] = useState(4)
+  const [hoveredId, setHoveredId] = useState(null)
+
+  // Refs for sections
+  const exploreRef = useRef(null);
+  const statsRef = useRef(null);
+  const aboutRef = useRef(null);
+  const programsRef = useRef(null);
+  const coachesRef = useRef(null);
+  const whyRef = useRef(null);
+  const successRef = useRef(null);
+  const impactRef = useRef(null);
+  const contactRef = useRef(null);
+
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -214,76 +283,8 @@ export default function SportsLandingPage() {
     message: '',
     privacy: false
   });
-  const [formSubmitted, setFormSubmitted] = useState(false);
-  const [currentTestimonial, setCurrentTestimonial] = useState(0);
-
-  const exploreRef = useRef(null);
-  const statsRef = useRef(null);
-  const aboutRef = useRef(null);
-  const programsRef = useRef(null);
-  const coachesRef = useRef(null);
-  const whyRef = useRef(null);
-  const successRef = useRef(null);
-  const impactRef = useRef(null);
-  const contactRef = useRef(null);
-
-  const { programs, fetchPrograms, coaches, fetchCoaches, createEnquiry } = useStore();
 
 
-  const [currentCoachSlide, setCurrentCoachSlide] = useState(0)
-  const [coachesPerSlide, setCoachesPerSlide] = useState(4)
-  const [hoveredId, setHoveredId] = useState(null)
-
-  const exploreSections = [
-    {
-      id: "programs",
-      title: "Training Programs",
-      description: "Customized programs for all levels",
-      icon: Zap,
-      color: "from-emerald-400 to-teal-500",
-      bgColor: "bg-emerald-50",
-      borderColor: "border-emerald-200",
-      count: "15+",
-      label: "Programs",
-      link: "/in-school-program",
-    },
-    {
-      id: "events",
-      title: "Live Events",
-      description: "Connect with coaches and athletes",
-      icon: Users,
-      color: "from-green-400 to-emerald-500",
-      bgColor: "bg-green-50",
-      borderColor: "border-green-200",
-      count: "12",
-      label: "This Month",
-      link: "/events",
-    },
-    {
-      id: "blogs",
-      title: "Resources & Blogs",
-      description: "Expert tips and training guides",
-      icon: FileText,
-      color: "from-teal-400 to-cyan-500",
-      bgColor: "bg-teal-50",
-      borderColor: "border-teal-200",
-      count: "50+",
-      label: "Articles",
-      link: "/blogs",
-    },
-    {
-      id: "enroll",
-      title: "Enroll Now",
-      description: "Start your transformation today",
-      icon: BookOpen,
-      color: "from-lime-400 to-green-500",
-      bgColor: "bg-lime-50",
-      borderColor: "border-lime-200",
-      count: "100%",
-      label: "Satisfaction",
-      link: "/contact",
-    },
-  ]
   useEffect(() => {
     const updateCoachesPerSlide = () => {
       if (window.innerWidth < 640) {
@@ -301,6 +302,7 @@ export default function SportsLandingPage() {
     window.addEventListener("resize", updateCoachesPerSlide)
     return () => window.removeEventListener("resize", updateCoachesPerSlide)
   }, [])
+
   // Auto-rotate testimonials
   useEffect(() => {
     const interval = setInterval(() => {
@@ -341,10 +343,8 @@ export default function SportsLandingPage() {
       setLoadingCoaches(false);
       // console.warn('fetchCoaches failed', err);
     }
-
-    // run once on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
   const programsArray = (() => {
     const arr = normalizeArray(programs);
     return arr.length > 0 ? arr : MOCK_PROGRAMS;
@@ -354,6 +354,7 @@ export default function SportsLandingPage() {
     const arr = normalizeArray(coaches);
     return arr.length > 0 ? arr : MOCK_COACHES;
   })();
+
   // Initialize Lenis for smooth scrolling
   useEffect(() => {
     const lenis = new Lenis({
@@ -642,190 +643,191 @@ export default function SportsLandingPage() {
       {/* Header */}
       <Navbar />
 
-    
-      {/* Explore Section */}
-       <section
-      ref={exploreRef}
-      className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden min-h-screen flex items-center"
-    >
-      {/* Animated Background */}
-      <motion.div
-        className="absolute inset-0 -z-10 overflow-hidden"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-      >
-        <motion.div
-          className="absolute top-0 right-0 w-96 h-96 rounded-full bg-gradient-to-br from-emerald-400/20 to-teal-400/20 blur-3xl"
-          animate={{ y: [0, 50, 0], scale: [1, 1.2, 1] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-gradient-to-tr from-green-300/20 to-emerald-400/20 blur-3xl"
-          animate={{ y: [0, -60, 0], scale: [1, 1.3, 1] }}
-          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-        />
-      </motion.div>
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+
+      {/* Explore Section */}
+      <section
+        ref={exploreRef}
+        className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden min-h-screen flex items-center"
+      >
+        {/* Animated Background */}
         <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={{
-            hidden: { opacity: 0 },
-            visible: {
-              opacity: 1,
-              transition: { staggerChildren: 0.15, delayChildren: 0.2 },
-            },
-          }}
-          className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center"
+          className="absolute inset-0 -z-10 overflow-hidden"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
         >
-          {/* Left Content */}
           <motion.div
-            variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0 } }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="space-y-8"
+            className="absolute top-0 right-0 w-96 h-96 rounded-full bg-gradient-to-br from-emerald-400/20 to-teal-400/20 blur-3xl"
+            animate={{ y: [0, 50, 0], scale: [1, 1.2, 1] }}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-gradient-to-tr from-green-300/20 to-emerald-400/20 blur-3xl"
+            animate={{ y: [0, -60, 0], scale: [1, 1.3, 1] }}
+            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+          />
+        </motion.div>
+
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={{
+              hidden: { opacity: 0 },
+              visible: {
+                opacity: 1,
+                transition: { staggerChildren: 0.15, delayChildren: 0.2 },
+              },
+            }}
+            className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center"
           >
-            <div className="space-y-4">
+            {/* Left Content */}
+            <motion.div
+              variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0 } }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="space-y-8"
+            >
+              <div className="space-y-4">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8 }}
+                >
+                  <span className="px-4 py-2 bg-gradient-to-r from-emerald-100 to-lime-100 border border-emerald-300 rounded-full text-sm font-semibold text-emerald-700 shadow-sm backdrop-blur-sm">
+                    🌿 Transform Your Game
+                  </span>
+                </motion.div>
+
+                <motion.h1
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8 }}
+                  className="text-5xl md:text-7xl font-black tracking-tight leading-tight"
+                >
+                  <span className="block text-slate-900 mb-2">Train Beyond</span>
+                  <motion.span
+                    className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-teal-500 to-green-600"
+                    animate={{ backgroundPosition: ["0% center", "100% center", "0% center"] }}
+                    transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    Limits
+                  </motion.span>
+                </motion.h1>
+
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.1 }}
+                  className="text-lg text-slate-600 max-w-lg leading-relaxed"
+                >
+                  Experience world-class athletic programs, personalized by expert coaches to help you push boundaries
+                  and achieve greatness—powered by focus, discipline, and innovation.
+                </motion.p>
+              </div>
+
+              {/* Buttons */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="flex flex-col sm:flex-row gap-4 pt-4"
               >
-                <span className="px-4 py-2 bg-gradient-to-r from-emerald-100 to-lime-100 border border-emerald-300 rounded-full text-sm font-semibold text-emerald-700 shadow-sm backdrop-blur-sm">
-                  🌿 Transform Your Game
-                </span>
+                <Link to="/train-the-trainers">
+                  <motion.button
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="group relative px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl text-lg overflow-hidden shadow-lg hover:shadow-emerald-400/40 transition-all duration-300"
+                  >
+                    <span className="relative z-10 flex items-center justify-center gap-2">
+                      Start Training
+                      <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
+                    </span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                  </motion.button>
+                </Link>
+
+                <Link to="/contact">
+                  <motion.button
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="px-8 py-4 bg-white border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 font-bold rounded-xl text-lg transition-all duration-300 shadow-sm"
+                  >
+                    Book a Trial
+                  </motion.button>
+                </Link>
               </motion.div>
+            </motion.div>
 
-              <motion.h1
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
-                className="text-5xl md:text-7xl font-black tracking-tight leading-tight"
-              >
-                <span className="block text-slate-900 mb-2">Train Beyond</span>
-                <motion.span
-                  className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-teal-500 to-green-600"
-                  animate={{ backgroundPosition: ["0% center", "100% center", "0% center"] }}
-                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                >
-                  Limits
-                </motion.span>
-              </motion.h1>
-
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.1 }}
-                className="text-lg text-slate-600 max-w-lg leading-relaxed"
-              >
-                Experience world-class athletic programs, personalized by expert coaches to help you push boundaries
-                and achieve greatness—powered by focus, discipline, and innovation.
-              </motion.p>
-            </div>
-
-            {/* Buttons */}
+            {/* Right Cards */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="flex flex-col sm:flex-row gap-4 pt-4"
+              variants={{ hidden: { opacity: 0, x: 50 }, visible: { opacity: 1, x: 0 } }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="relative"
             >
-              <Link to="/train-the-trainers">
-                <motion.button
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="group relative px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl text-lg overflow-hidden shadow-lg hover:shadow-emerald-400/40 transition-all duration-300"
-                >
-                  <span className="relative z-10 flex items-center justify-center gap-2">
-                    Start Training
-                    <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
-                  </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-                </motion.button>
-              </Link>
+              <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-emerald-50 via-teal-50/40 to-green-50/30 border border-emerald-200/50 backdrop-blur-xl shadow-inner"></div>
 
-              <Link to="/contact">
-                <motion.button
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="px-8 py-4 bg-white border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-50 font-bold rounded-xl text-lg transition-all duration-300 shadow-sm"
-                >
-                  Book a Trial
-                </motion.button>
-              </Link>
+              <div className="relative z-10 grid grid-cols-2 gap-4 lg:gap-6">
+                {exploreSections.map((section, i) => {
+                  const Icon = section.icon
+                  return (
+                    <Link to={section.link} key={section.id}>
+                      <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: i * 0.1 }}
+                        whileHover={{ y: -8, scale: 1.02 }}
+                        className={`group relative p-6 rounded-2xl border-2 ${section.borderColor} ${section.bgColor} overflow-hidden shadow-md hover:shadow-emerald-200/50 transition-all duration-500 cursor-pointer`}
+                      >
+                        {/* Hover gradient shimmer */}
+                        <motion.div
+                          className={`absolute inset-0 bg-gradient-to-br ${section.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500`}
+                        />
+                        <motion.div
+                          className="absolute -inset-[200%] bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100"
+                          animate={{ x: ["-200%", "200%"] }}
+                          transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+                        />
+
+                        <div className="relative z-10 space-y-4 flex flex-col justify-between h-full">
+                          <div>
+                            <motion.div
+                              whileHover={{ rotate: 12, scale: 1.1 }}
+                              className={`inline-block p-3 rounded-lg bg-gradient-to-br ${section.color} text-white mb-3`}
+                            >
+                              <Icon size={24} />
+                            </motion.div>
+                            <h3 className="text-slate-900 font-bold text-lg mb-1">{section.title}</h3>
+                            <p className="text-slate-600 text-sm leading-relaxed">{section.description}</p>
+                          </div>
+
+                          <div className="flex items-end justify-between pt-2 border-t border-slate-200 group-hover:border-emerald-300 transition-all duration-300">
+                            <span className={`text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r ${section.color}`}>
+                              {section.count}
+                            </span>
+                            <span className="text-xs text-slate-500 font-semibold uppercase tracking-wide">
+                              {section.label}
+                            </span>
+                          </div>
+                        </div>
+
+                        <motion.div
+                          className="absolute top-4 right-4 text-slate-400 group-hover:text-emerald-600 transition-all duration-500"
+                          animate={{ x: [0, 4, 0] }}
+                          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                        >
+                          <ArrowRight size={20} />
+                        </motion.div>
+                      </motion.div>
+                    </Link>
+                  )
+                })}
+              </div>
             </motion.div>
           </motion.div>
-
-          {/* Right Cards */}
-          <motion.div
-            variants={{ hidden: { opacity: 0, x: 50 }, visible: { opacity: 1, x: 0 } }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="relative"
-          >
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-emerald-50 via-teal-50/40 to-green-50/30 border border-emerald-200/50 backdrop-blur-xl shadow-inner"></div>
-
-            <div className="relative z-10 grid grid-cols-2 gap-4 lg:gap-6">
-              {exploreSections.map((section, i) => {
-                const Icon = section.icon
-                return (
-                  <Link to={section.link} key={section.id}>
-                    <motion.div
-                      initial={{ opacity: 0, y: 30 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: i * 0.1 }}
-                      whileHover={{ y: -8, scale: 1.02 }}
-                      className={`group relative p-6 rounded-2xl border-2 ${section.borderColor} ${section.bgColor} overflow-hidden shadow-md hover:shadow-emerald-200/50 transition-all duration-500 cursor-pointer`}
-                    >
-                      {/* Hover gradient shimmer */}
-                      <motion.div
-                        className={`absolute inset-0 bg-gradient-to-br ${section.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500`}
-                      />
-                      <motion.div
-                        className="absolute -inset-[200%] bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100"
-                        animate={{ x: ["-200%", "200%"] }}
-                        transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-                      />
-
-                      <div className="relative z-10 space-y-4 flex flex-col justify-between h-full">
-                        <div>
-                          <motion.div
-                            whileHover={{ rotate: 12, scale: 1.1 }}
-                            className={`inline-block p-3 rounded-lg bg-gradient-to-br ${section.color} text-white mb-3`}
-                          >
-                            <Icon size={24} />
-                          </motion.div>
-                          <h3 className="text-slate-900 font-bold text-lg mb-1">{section.title}</h3>
-                          <p className="text-slate-600 text-sm leading-relaxed">{section.description}</p>
-                        </div>
-
-                        <div className="flex items-end justify-between pt-2 border-t border-slate-200 group-hover:border-emerald-300 transition-all duration-300">
-                          <span className={`text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r ${section.color}`}>
-                            {section.count}
-                          </span>
-                          <span className="text-xs text-slate-500 font-semibold uppercase tracking-wide">
-                            {section.label}
-                          </span>
-                        </div>
-                      </div>
-
-                      <motion.div
-                        className="absolute top-4 right-4 text-slate-400 group-hover:text-emerald-600 transition-all duration-500"
-                        animate={{ x: [0, 4, 0] }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                      >
-                        <ArrowRight size={20} />
-                      </motion.div>
-                    </motion.div>
-                  </Link>
-                )
-              })}
-            </div>
-          </motion.div>
-        </motion.div>
-      </div>
-    </section>
+        </div>
+      </section>
 
 
       {/* Stats Section */}
@@ -916,7 +918,7 @@ export default function SportsLandingPage() {
                   transition={{ duration: 0.3 }}
                 >
                   <Trophy className="w-8 h-8 mb-4" />
-                  <h3 className="text-2xl font-bold mb-2">42+</h3>
+                  <h3 className="text-2xl font-bold mb-2">25+</h3>
                   <p className="opacity-90">National Champions</p>
                 </motion.div>
                 <motion.div
@@ -925,7 +927,7 @@ export default function SportsLandingPage() {
                   transition={{ duration: 0.3 }}
                 >
                   <Users className="w-8 h-8 mb-4" />
-                  <h3 className="text-2xl font-bold mb-2">8500+</h3>
+                  <h3 className="text-2xl font-bold mb-2">300+</h3>
                   <p className="opacity-90">Students Trained</p>
                 </motion.div>
                 <motion.div
@@ -934,7 +936,7 @@ export default function SportsLandingPage() {
                   transition={{ duration: 0.3 }}
                 >
                   <GraduationCap className="w-8 h-8 mb-4" />
-                  <h3 className="text-2xl font-bold mb-2">150+</h3>
+                  <h3 className="text-2xl font-bold mb-2">12+</h3>
                   <p className="opacity-90">Educational Institutions</p>
                 </motion.div>
               </div>
@@ -963,8 +965,8 @@ export default function SportsLandingPage() {
                 About <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Yohan Sports</span>
               </h2>
               <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-                Founded in 2011, Yohan Sports has been at the forefront of sports education,
-                partnering with over 150 educational institutions to deliver world-class
+                Founded in 2024, Yohan Sports has been at the forefront of sports education,
+                partnering with over 12+ educational institutions to deliver world-class
                 training programs that create champions both on and off the field.
               </p>
               <p className="text-lg text-gray-600 mb-10 leading-relaxed">
@@ -988,8 +990,8 @@ export default function SportsLandingPage() {
                     <CheckCircle className="text-emerald-600 w-4 h-4" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-gray-900 mb-1">State-of-the-Art Facilities</h4>
-                    <p className="text-gray-600">50,000 sq ft of modern training infrastructure</p>
+                    <h4 className="font-bold text-gray-900 mb-1">School-Based Training Programs</h4>
+                    <p className="text-gray-600">Training is conducted directly at partner schools for convenient and consistent coaching.</p>
                   </div>
                 </div>
                 <div className="flex items-start">
@@ -997,127 +999,66 @@ export default function SportsLandingPage() {
                     <CheckCircle className="text-emerald-600 w-4 h-4" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-gray-900 mb-1">Proven Curriculum</h4>
+                    <h4 className="font-bold text-gray-900 mb-1">Structured Curriculum</h4>
                     <p className="text-gray-600">Scientifically designed programs with measurable outcomes</p>
                   </div>
                 </div>
               </div>
             </motion.div>
           </div>
+        </div>
+      </section>
 
-          {/* Timeline */}
+      {/* Timeline Section */}
+      <section className="py-28 bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8 }}
-            className="mt-24"
+            className="text-center mb-20"
           >
-            <h3 className="text-3xl font-bold text-center text-gray-900 mb-16">Our Journey</h3>
-            <div className="relative">
-              <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-gradient-to-b from-emerald-500 to-teal-500"></div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                {timeline.map((item, index) => (
-                  <motion.div
-                    key={index}
-                    className={`flex ${index % 2 === 0 ? 'md:justify-start md:pr-16' : 'md:justify-end md:pl-16'} relative`}
-                    initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true, margin: "-100px" }}
-                    transition={{ duration: 0.6, delay: index * 0.2 }}
-                  >
-                    <div className={`w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white z-10 ${index % 2 === 0 ? 'mr-6' : 'ml-6'}`}>
-                      <span className="text-sm font-bold">{item.year}</span>
-                    </div>
-                    <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
-                      <h4 className="font-bold text-lg text-gray-900 mb-2">{item.title}</h4>
-                      <p className="text-gray-600">{item.description}</p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">Our Journey</h2>
+            <p className="text-xl opacity-90 max-w-3xl mx-auto">
+              From humble beginnings to becoming a leader in sports education
+            </p>
           </motion.div>
+
+          <div className="relative max-w-4xl mx-auto">
+            <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-white/30"></div>
+            <div className="space-y-16">
+              {timeline.map((item, index) => (
+                <motion.div
+                  key={index}
+                  className="flex items-center"
+                  initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 0.6, delay: index * 0.2 }}
+                >
+                  <div className={`w-1/2 pr-12 ${index % 2 === 0 ? '' : 'order-2 pr-0 pl-12 text-right'}`}>
+                    <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+                      <h4 className="text-xl font-bold mb-2">{item.title}</h4>
+                      <p className="opacity-90">{item.description}</p>
+                    </div>
+                  </div>
+                  <div className="w-1/2 flex justify-center z-10">
+                    <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-emerald-600 font-bold text-lg shadow-lg">
+                      {item.year}
+                    </div>
+                  </div>
+                  <div className={`w-1/2 ${index % 2 === 0 ? 'order-2 pl-12' : 'pr-12'}`}>
+                    {/* Empty div for spacing */}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Programs Section */}
-      {/* <section ref={programsRef} className="py-28 bg-gradient-to-b from-white to-gray-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={containerVariants}
-            className="text-center mb-20"
-          >
-            <motion.h2
-              variants={itemVariants}
-              className="text-4xl md:text-5xl font-bold text-gray-900 mb-6"
-            >
-              Our Training Programs
-            </motion.h2>
-            <motion.p
-              variants={itemVariants}
-              className="text-xl text-gray-600 max-w-3xl mx-auto"
-            >
-              Comprehensive sports education for every level and interest
-            </motion.p>
-          </motion.div>
-
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={containerVariants}
-            className="grid grid-cols-1 md:grid-cols-2 gap-12"
-          >
-            {programsArray.map((program, index) => (
-              <motion.div
-                key={program._id || program.id || `${program.name || 'prog'}-${idx}`}
-                variants={itemVariants}
-                whileHover={{ y: -15, scale: 1.02 }}
-                className="group relative bg-white rounded-3xl overflow-hidden shadow-2xl hover:shadow-emerald-500/10 transition-all duration-500"
-              >
-                <div className="h-80 overflow-hidden relative">
-                  <img
-                    src={program.image || "https://placehold.co/800x500/059669/white?text=Program"}
-                    alt={program.name}
-                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
-                    onError={(e) => { e.currentTarget.src = "https://placehold.co/800x500/059669/white?text=Program"; }}
-                  />
-                  <div className={`absolute inset-0 bg-gradient-to-t ${program.color} opacity-80`}></div>
-                  <div className="absolute bottom-6 left-6 text-white">
-                    <h3 className="text-2xl font-bold mb-2">{program.title}</h3>
-                    <p className="opacity-90">{program.duration}</p>
-                  </div>
-                </div>
-                <div className="p-8">
-                  <p className="text-gray-600 mb-6">{program.description}</p>
-                  <ul className="mb-8 space-y-3">
-                    {program.features?.map((benefit, i) => (
-                      <li key={i} className="flex items-center">
-                        <div className="w-2 h-2 bg-emerald-500 rounded-full mr-4"></div>
-                        <span className="text-gray-700">{benefit}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <motion.button
-                    onClick={() => handleEnroll(program)}
-                    className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-4 rounded-xl font-medium transition-all duration-300"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    Enroll Now
-                  </motion.button>
-                </div>
-              </motion.div>
-            ))}
-
-          </motion.div>
-        </div>
-      </section> */}
-
       <section ref={programsRef} className="py-28 bg-gradient-to-b from-white to-gray-50 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-teal-500/5"></div>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -1409,76 +1350,6 @@ export default function SportsLandingPage() {
       )}
 
       {/* Coaches Section */}
-      {/* <section ref={coachesRef} className="py-28 bg-gradient-to-b from-gray-50 to-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={containerVariants}
-            className="text-center mb-20"
-          >
-            <motion.h2
-              variants={itemVariants}
-              className="text-4xl md:text-5xl font-bold text-gray-900 mb-6"
-            >
-              Meet Our Expert Coaches
-            </motion.h2>
-            <motion.p
-              variants={itemVariants}
-              className="text-xl text-gray-600 max-w-3xl mx-auto"
-            >
-              Certified professionals with championship experience
-            </motion.p>
-          </motion.div>
-
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={containerVariants}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
-          >
-            {coachesArray.map((coach, index) => (
-              <motion.div
-                key={coach._id || coach.id || `${coach.name || 'coach'}-${idx}`}
-                variants={itemVariants}
-                whileHover={{ y: -15, scale: 1.03 }}
-                className="bg-white rounded-3xl overflow-hidden shadow-2xl hover:shadow-emerald-500/10 transition-all duration-500 group"
-              >
-                <div className="h-80 bg-gray-200 relative overflow-hidden">
-                  <img
-                    src={coach.images?.[0]?.url}
-                    alt={coach.name}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6"
-                    whileHover={{ opacity: 1 }}
-                  >
-                    <div className="text-white">
-                      <p className="font-bold text-xl mb-1">{coach.name}</p>
-                      <p className="text-sm opacity-90 mb-2">{coach.role}</p>
-                      <p className="text-xs opacity-75">{coach.experience}</p>
-                    </div>
-                  </motion.div>
-                </div>
-                <div className="p-6">
-                  <p className="text-gray-600 text-sm mb-4">{coach.qualifications}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {coach.specialties?.map((specialty, i) => (
-                      <span key={i} className="bg-emerald-100 text-emerald-800 text-xs px-3 py-1 rounded-full font-medium">
-                        {specialty}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section> */}
-
       <section ref={coachesRef} className="py-28 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden">
         <div className="absolute inset-0">
           <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-full blur-3xl"></div>
@@ -1616,8 +1487,8 @@ export default function SportsLandingPage() {
                       key={index}
                       onClick={() => setCurrentCoachSlide(index)}
                       className={`h-3 rounded-full transition-all duration-300 ${index === currentCoachSlide
-                          ? "bg-gradient-to-r from-emerald-600 to-teal-600 w-12"
-                          : "bg-gray-300 hover:bg-gray-400 w-3"
+                        ? "bg-gradient-to-r from-emerald-600 to-teal-600 w-12"
+                        : "bg-gray-300 hover:bg-gray-400 w-3"
                         }`}
                       whileHover={{ scale: 1.2 }}
                       whileTap={{ scale: 0.9 }}
@@ -1680,18 +1551,18 @@ export default function SportsLandingPage() {
                   "{testimonials[currentTestimonial].quote}"
                 </blockquote>
                 <div className="flex items-center justify-center mb-6">
-                  <div className="bg-gray-200 border-2 border-dashed rounded-xl w-20 h-20" />
+                  {/* <div className="bg-gray-200 border-2 border-dashed rounded-xl w-20 h-20" /> */}
                   <div className="ml-6 text-left">
                     <p className="font-bold text-xl text-gray-900">{testimonials[currentTestimonial].author}</p>
                     <p className="text-gray-600">{testimonials[currentTestimonial].school}</p>
                   </div>
                 </div>
                 <div className="flex justify-center">
-                  <img
+                  {testimonials[currentTestimonial].logo && <img
                     src={testimonials[currentTestimonial].logo}
                     alt={testimonials[currentTestimonial].school}
                     className="h-12"
-                  />
+                  />}
                 </div>
               </motion.div>
 
@@ -1737,15 +1608,15 @@ export default function SportsLandingPage() {
 
               <div className="grid grid-cols-3 gap-8">
                 <div className="text-center">
-                  <div className="text-4xl font-bold mb-2">42+</div>
+                  <div className="text-4xl font-bold mb-2">25+</div>
                   <div className="text-sm opacity-90">National Champions</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-4xl font-bold mb-2">150+</div>
+                  <div className="text-4xl font-bold mb-2">12+</div>
                   <div className="text-sm opacity-90">Institutions</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-4xl font-bold mb-2">8500+</div>
+                  <div className="text-4xl font-bold mb-2">300+</div>
                   <div className="text-sm opacity-90">Athletes</div>
                 </div>
               </div>
@@ -1875,7 +1746,7 @@ export default function SportsLandingPage() {
                         value={formData.phone}
                         onChange={handleInputChange}
                         className="w-full px-6 py-4 border border-gray-300 rounded-2xl focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-300"
-                        placeholder="(123) 456-7890"
+                        placeholder="+91 12345 67890"
                       />
                     </div>
                     <div>
@@ -2123,6 +1994,7 @@ export default function SportsLandingPage() {
           ]
         })}
       </script>
+
     </div>
   );
 }

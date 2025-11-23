@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Award } from "lucide-react";
 import Lenis from "@studio-freight/lenis";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 function Navbar({ theme = "dark", onProgramSelect = () => { } }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -18,7 +18,7 @@ function Navbar({ theme = "dark", onProgramSelect = () => { } }) {
   const successRef = useRef(null);
   const impactRef = useRef(null);
   const contactRef = useRef(null);
-
+  const navigate = useNavigate();
   const lenisRef = useRef(null); // store Lenis instance so we can call it later
   const location = useLocation(); // react-router location
 
@@ -138,8 +138,8 @@ function Navbar({ theme = "dark", onProgramSelect = () => { } }) {
   return (
     <header
       className={`fixed w-full z-50 transition-all duration-500 ${isScrolled
-          ? "bg-white/95 backdrop-blur-xl shadow-xl py-3"
-          : "bg-transparent py-5"
+        ? "bg-white/95 backdrop-blur-xl shadow-xl py-3"
+        : "bg-transparent py-5"
         }`}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -154,7 +154,7 @@ function Navbar({ theme = "dark", onProgramSelect = () => { } }) {
               {/* <Award className="text-white w-6 h-6" /> */}
             </motion.div>
             <span className="ml-3 text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-              Yohan Sports
+              YohanSports
             </span>
           </div>
 
@@ -164,8 +164,8 @@ function Navbar({ theme = "dark", onProgramSelect = () => { } }) {
             <Link
               to="/"
               className={`text-sm font-medium ${activeSection === "home"
-                  ? "text-emerald-600 font-bold"
-                  : "text-gray-700 hover:text-emerald-600"
+                ? "text-emerald-600 font-bold"
+                : "text-gray-700 hover:text-emerald-600"
                 }`}
               onClick={() => {
                 // ensure top scroll on same-page link
@@ -183,8 +183,8 @@ function Navbar({ theme = "dark", onProgramSelect = () => { } }) {
             <Link
               to="/about"
               className={`text-sm font-medium ${activeSection === "about"
-                  ? "text-emerald-600 font-bold"
-                  : "text-gray-700 hover:text-emerald-600"
+                ? "text-emerald-600 font-bold"
+                : "text-gray-700 hover:text-emerald-600"
                 }`}
             >
               About Us
@@ -194,8 +194,8 @@ function Navbar({ theme = "dark", onProgramSelect = () => { } }) {
             <div className="relative group">
               <button
                 className={`text-sm font-medium flex items-center gap-1 ${activeSection === "business"
-                    ? "text-emerald-600 font-bold"
-                    : "text-gray-700 hover:text-emerald-600"
+                  ? "text-emerald-600 font-bold"
+                  : "text-gray-700 hover:text-emerald-600"
                   }`}
               >
                 Business
@@ -242,8 +242,8 @@ function Navbar({ theme = "dark", onProgramSelect = () => { } }) {
             <div className="relative group">
               <button
                 className={`text-sm font-medium flex items-center gap-1 ${activeSection === "programs"
-                    ? "text-emerald-600 font-bold"
-                    : "text-gray-700 hover:text-emerald-600"
+                  ? "text-emerald-600 font-bold"
+                  : "text-gray-700 hover:text-emerald-600"
                   }`}
               >
                 Programs
@@ -290,8 +290,8 @@ function Navbar({ theme = "dark", onProgramSelect = () => { } }) {
             <Link
               to="/events"
               className={`text-sm font-medium ${activeSection === "events"
-                  ? "text-emerald-600 font-bold"
-                  : "text-gray-700 hover:text-emerald-600"
+                ? "text-emerald-600 font-bold"
+                : "text-gray-700 hover:text-emerald-600"
                 }`}
             >
               Events
@@ -299,8 +299,8 @@ function Navbar({ theme = "dark", onProgramSelect = () => { } }) {
             <Link
               to="/blogs"
               className={`text-sm font-medium ${activeSection === "blogs"
-                  ? "text-emerald-600 font-bold"
-                  : "text-gray-700 hover:text-emerald-600"
+                ? "text-emerald-600 font-bold"
+                : "text-gray-700 hover:text-emerald-600"
                 }`}
             >
               Blogs
@@ -347,52 +347,87 @@ function Navbar({ theme = "dark", onProgramSelect = () => { } }) {
               className="md:hidden mt-4 pb-4 bg-white/95 backdrop-blur-xl rounded-2xl shadow-lg border border-gray-100"
             >
               <div className="flex flex-col space-y-3">
+
+                {/* Home */}
                 <Link
                   to="/"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    if (lenisRef.current && typeof lenisRef.current.scrollTo === "function") {
-                      lenisRef.current.scrollTo(0);
-                    } else {
-                      window.scrollTo({ top: 0, behavior: "smooth" });
-                    }
-                  }}
-                  className="text-left py-3 px-4 rounded-xl font-medium text-gray-700 hover:bg-gray-100"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="py-3 px-4 rounded-xl font-medium text-gray-700 hover:bg-gray-100"
                 >
                   Home
                 </Link>
+
+                {/* About */}
                 <Link
                   to="/about"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-left py-3 px-4 rounded-xl font-medium text-gray-700 hover:bg-gray-100"
+                  className="py-3 px-4 rounded-xl font-medium text-gray-700 hover:bg-gray-100"
                 >
                   About Us
                 </Link>
+
+                {/* Business Dropdown (Mobile) */}
+                <details className="px-4">
+                  <summary className="py-3 font-medium text-gray-700 cursor-pointer hover:text-emerald-600">
+                    Business
+                  </summary>
+                  <div className="flex flex-col pl-4 space-y-2 mt-2">
+                    <Link
+                      to="/train-the-trainers"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="py-2 text-gray-700 hover:text-emerald-600"
+                    >
+                      Train the Trainers
+                    </Link>
+                    <Link
+                      to="/pay-and-play"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="py-2 text-gray-700 hover:text-emerald-600"
+                    >
+                      Pay and Play
+                    </Link>
+                  </div>
+                </details>
+
+                {/* Programs Dropdown (Mobile) */}
+                <details className="px-4">
+                  <summary className="py-3 font-medium text-gray-700 cursor-pointer hover:text-emerald-600">
+                    Programs
+                  </summary>
+                  <div className="flex flex-col pl-4 space-y-2 mt-2">
+                    <Link
+                      to="/in-school-program"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="py-2 text-gray-700 hover:text-emerald-600"
+                    >
+                      In-School Physical Education
+                    </Link>
+                  </div>
+                </details>
+
+                {/* Events */}
                 <Link
                   to="/events"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-left py-3 px-4 rounded-xl font-medium text-gray-700 hover:bg-gray-100"
+                  className="py-3 px-4 rounded-xl font-medium text-gray-700 hover:bg-gray-100"
                 >
                   Events
                 </Link>
+
+                {/* Blogs */}
                 <Link
                   to="/blogs"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-left py-3 px-4 rounded-xl font-medium text-gray-700 hover:bg-gray-100"
+                  className="py-3 px-4 rounded-xl font-medium text-gray-700 hover:bg-gray-100"
                 >
                   Blogs
                 </Link>
-                <Link
-                  to="/testimonials"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="text-left py-3 px-4 rounded-xl font-medium text-gray-700 hover:bg-gray-100"
-                >
-                  Testimonials
-                </Link>
+
+                {/* Enroll Now */}
                 <Link
                   to="/contact"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 text-center"
+                  className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-3 mx-4 rounded-xl font-medium text-center hover:from-emerald-700 hover:to-teal-700"
                 >
                   Enroll Now
                 </Link>

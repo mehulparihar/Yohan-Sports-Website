@@ -6,6 +6,8 @@ import { Users, Award, Trophy, Calendar, MapPin, Clock, TrendingUp, Shield, Star
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
 import useStore from '../stores'; // <-- zustand store
+import { useNavigate } from "react-router-dom";
+
 
 // Mock data for in-school programs
 const MOCK_PROGRAMS = [
@@ -197,7 +199,7 @@ const InSchoolProgram = () => {
   const [showEnrollmentModal, setShowEnrollmentModal] = useState(false);
   const [formStatus, setFormStatus] = useState('idle');
   const [activeFaq, setActiveFaq] = useState(null);
-
+   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -738,7 +740,7 @@ const InSchoolProgram = () => {
       </section>
 
       {/* Testimonials */}
-      <section className="py-20 bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
+      {/* <section className="py-20 bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -764,10 +766,10 @@ const InSchoolProgram = () => {
           >
             {[
               {
-                school: "Lincoln High School",
+                // school: "Lincoln High School",
                 quote: "Student participation in sports increased by 70% and we've won 3 state championships since partnering with yohansports.",
-                role: "Principal Davis",
-                years: "5 years"
+                // role: "Principal Davis",
+                // years: "5 years"
               },
               {
                 school: "Greenfield Academy",
@@ -800,7 +802,7 @@ const InSchoolProgram = () => {
             ))}
           </motion.div>
         </div>
-      </section>
+      </section> */}
 
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-b from-white to-gray-50">
@@ -822,7 +824,7 @@ const InSchoolProgram = () => {
 
             <motion.div className="flex flex-col sm:flex-row justify-center gap-6">
               <motion.button
-                onClick={() => setShowInquiryModal(true)}
+                onClick={() => navigate("/contact")}
                 className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-10 py-5 rounded-full font-medium text-lg transition-all duration-300 shadow-2xl hover:shadow-emerald-500/25"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -830,12 +832,12 @@ const InSchoolProgram = () => {
                 Request a Proposal
               </motion.button>
               <motion.button
-                onClick={() => window.location.href = 'tel:+1234567890'}
+                onClick={() => window.location.href = 'tel:+91 93263 81578'}
                 className="bg-white hover:bg-gray-50 text-emerald-600 border-2 border-emerald-600 px-10 py-5 rounded-full font-medium text-lg transition-all duration-300 shadow-xl hover:shadow-lg"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                Call Us: (123) 456-7890
+                Call Us: +91 93263 81578
               </motion.button>
             </motion.div>
           </motion.div>

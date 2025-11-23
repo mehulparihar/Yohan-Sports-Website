@@ -6,6 +6,7 @@ import { Calendar, Users, Award, TrendingUp, BookOpen, Clock, Tag, User, Message
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import useStore from '../stores';
+import { Link } from 'react-router-dom';
 
 
 // Mock blog data
@@ -115,12 +116,12 @@ const MOCK_BLOGS = [
 ];
 
 const categories = [
-  { name: "Sports Science", count: 12, icon: Award },
-  { name: "Nutrition", count: 8, icon: TrendingUp },
-  { name: "Mental Training", count: 15, icon: Users },
-  { name: "Technology", count: 6, icon: BookOpen },
-  { name: "Recovery", count: 10, icon: Clock },
-  { name: "Leadership", count: 9, icon: User }
+  { name: "Sports Science", icon: Award },
+  { name: "Nutrition",  icon: TrendingUp },
+  { name: "Mental Training",icon: Users },
+  { name: "Technology", icon: BookOpen },
+  { name: "Recovery", icon: Clock },
+  { name: "Leadership", icon: User }
 ];
 
 const popularTags = ["Training", "Performance", "Nutrition", "Youth", "Mental Toughness", "Technology", "Recovery", "Leadership", "Competition", "Health"];
@@ -544,13 +545,13 @@ const BlogsPage = () => {
                         </div>
                       </div>
 
-                      <motion.button
+                      <Link
+                        to={`/blogs/${post.slug || post._id}`}
                         className="text-emerald-600 hover:text-emerald-700 font-medium flex items-center text-sm"
-                        whileHover={{ x: 5 }}
                       >
                         Read More
                         <ChevronRight className="w-4 h-4 ml-1" />
-                      </motion.button>
+                      </Link>
                     </div>
                   </div>
                 </motion.article>

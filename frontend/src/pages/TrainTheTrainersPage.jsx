@@ -186,7 +186,6 @@ const faqs = [
 
 
 const TrainTheTrainersPage = () => {
-  // Tabs & UI state (unchanged)
   const [activeTab, setActiveTab] = useState('programs');
   const [selectedProgram, setSelectedProgram] = useState(null);
   const [showEnrollmentModal, setShowEnrollmentModal] = useState(false);
@@ -210,15 +209,12 @@ const TrainTheTrainersPage = () => {
 
   // Fetch programs on mount if not present
   useEffect(() => {
-    // defensive: if programs.list isn't an array or is empty, fetch
     const list = programs && programs.list;
     const hasArray = Array.isArray(list) && list.length > 0;
-    // Also handle wrapper shape: programs.list?.data
     const wrapped = list && list.data && Array.isArray(list.data) && list.data.length > 0;
     if (!hasArray && !wrapped) {
       fetchPrograms();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Helper to normalize programs from store (handles resp wrappers)
@@ -239,7 +235,6 @@ const TrainTheTrainersPage = () => {
     return MOCK_PROGRAMS;
   };
 
-  // Enrollment handlers (unchanged functionality)
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -305,7 +300,6 @@ const TrainTheTrainersPage = () => {
     setActiveFaq(activeFaq === index ? null : index);
   };
 
-  // Animation variants (kept same)
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -381,7 +375,6 @@ const TrainTheTrainersPage = () => {
             {[
               { id: 'programs', name: 'Programs' },
               { id: 'curriculum', name: 'Curriculum' },
-              { id: 'trainers', name: 'Master Trainers' },
               { id: 'benefits', name: 'Certification Benefits' },
               { id: 'faq', name: 'FAQ' }
             ].map((tab) => (
@@ -543,65 +536,7 @@ const TrainTheTrainersPage = () => {
             </motion.div>
           )}
 
-          {/* Master Trainers Tab */}
-          {activeTab === 'trainers' && (
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-100px" }}
-              variants={containerVariants}
-              className="grid grid-cols-1 md:grid-cols-3 gap-8"
-            >
-              {trainers.map((trainer) => (
-                <motion.div
-                  key={trainer.id}
-                  variants={itemVariants}
-                  whileHover={{ y: -10, scale: 1.03 }}
-                  className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 group"
-                >
-                  <div className="h-64 bg-gray-200 relative overflow-hidden">
-                    <img
-                      src={trainer.image}
-                      alt={trainer.name}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    />
-                    <motion.div
-                      className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6"
-                      whileHover={{ opacity: 1 }}
-                    >
-                      <div className="text-white">
-                        <p className="font-bold text-xl mb-1">{trainer.name}</p>
-                        <p className="text-sm opacity-90">{trainer.role}</p>
-                      </div>
-                    </motion.div>
-                  </div>
-                  <div className="p-6">
-                    <p className="text-gray-600 text-sm mb-4">{trainer.qualifications}</p>
-                    <div className="mb-4">
-                      <h4 className="font-bold text-gray-900 mb-2">Specialties:</h4>
-                      <div className="flex flex-wrap gap-1">
-                        {trainer.specialties.map((specialty, index) => (
-                          <span key={index} className="px-2 py-1 bg-emerald-100 text-emerald-800 text-xs rounded">
-                            {specialty}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-gray-900 mb-2">Certifications:</h4>
-                      <div className="flex flex-wrap gap-1">
-                        {trainer.certifications.map((cert, index) => (
-                          <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
-                            {cert}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
+         
 
           {/* Certification Benefits Tab */}
           {activeTab === 'benefits' && (
@@ -643,16 +578,7 @@ const TrainTheTrainersPage = () => {
                 ))}
               </motion.div>
 
-              <motion.div
-                variants={itemVariants}
-                className="mt-12 text-center"
-              >
-                <div className="inline-block bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-8 py-4 rounded-2xl">
-                  <Award className="w-8 h-8 mx-auto mb-2" />
-                  <h4 className="text-xl font-bold">Internationally Recognized</h4>
-                  <p className="opacity-90 mt-1">Valid across 50+ countries</p>
-                </div>
-              </motion.div>
+          
             </motion.div>
           )}
 
