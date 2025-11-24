@@ -37,12 +37,11 @@ export const createEventsSlice = (set, get) => ({
   createEvent: async (payload) => {
     get()._setEvents({ loading: true, error: null });
     try {
-      console.log('Creating event with payload:', payload);
+
       const resp = payload instanceof FormData
         ? await api.post('/admin/events', payload)
         : await api.post('/admin/events', payload);
 
-      console.log('Event created:', resp.data);
 
       set(state => ({ events: { ...state.events, list: [resp.data, ...state.events.list] } }));
       get()._setEvents({ loading: false });

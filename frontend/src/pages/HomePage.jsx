@@ -1403,7 +1403,7 @@ export default function SportsLandingPage() {
                   >
                     <div className="relative h-80 overflow-hidden">
                       <motion.img
-                        src={coach.images?.[0]?.url || "/placeholder.svg"}
+                        src={coach.images?.[0]?.url}
                         alt={coach.name}
                         className="w-full h-full object-cover"
                         whileHover={{ scale: 1.1 }}

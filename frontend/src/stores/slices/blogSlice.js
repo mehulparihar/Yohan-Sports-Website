@@ -24,7 +24,6 @@ export const createBlogSlice = (set, get) => ({
       const list = extractArray(resp);
       get()._setBlogsList(list);
       get()._setBlogs({ loading: false });
-      console.log('Fetched blogs (normalized):', list);
       return { ok: true, data: list };
     } catch (err) {
       const message = err?.response?.data?.message || err.message || 'Fetch blogs failed';
